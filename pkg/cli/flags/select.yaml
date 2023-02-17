@@ -8,3 +8,7 @@
   help: Output a single templated value for each row, on a single line
   default: ""
 
+- name: select-ui
+  type: bool
+  help: Use a bubbletea selector to chose a single value out of the selected field
+  default: false

@@ -414,8 +414,22 @@ func BuildCobraCommandAlias(alias *alias.CommandAlias) (*cobra.Command, error) {
 
 	cmd.Args = cobra.MinimumNArgs(minArgs)
 
+	originParameterDefinitions := map[string]*parameters.ParameterDefinition{}
+	for _, pd := range alias.AliasedCommand.Description().Flags {
+		originParameterDefinitions[pd.Name] = pd
+	}
+
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		for k, v := range alias.Flags {
+			pd := originParameterDefinitions[k]
+			if pd != nil && parameters.IsListParameter(pd.Type) {
+				// TODO(manuel, 2023-10-30) appending has to somehow be handled one level below
+				appendFlag := fmt.Sprintf("%s-append", k)
+				if !cmd.Flags().Changed(appendFlag) {
+					err = cmd.Flags().Set(k, v)
+					cobra.CheckErr(err)
+				}
+			}
 			if !cmd.Flags().Changed(k) {
 				err = cmd.Flags().Set(k, v)
 				cobra.CheckErr(err)

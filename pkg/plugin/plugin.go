@@ -1,11 +1,8 @@
-package pluginpackage
+package plugin
 
 import (
-	"fmt"
-	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 	"io"
-	"os"
 )
 
 type Descriptor struct {
@@ -44,29 +41,4 @@ func (d *Descriptor) PrintAsYAML(w io.Writer) error {
 	}
 	_, err = w.Write(data)
 	return err
-}
-
-//nolint:deacode,unused
-var mockDescriptor = Descriptor{
-	// ... [Same mockDescriptor content as before]
-}
-
-//nolint:deadcode,unused
-var getDescriptorCmd = &cobra.Command{
-	Use:   "get-descriptor",
-	Short: "Retrieve the plugin descriptor",
-	Run: func(cmd *cobra.Command, args []string) {
-		err := mockDescriptor.PrintAsYAML(os.Stdout)
-		cobra.CheckErr(err)
-		_ = mockDescriptor
-	},
-}
-
-//nolint:deadcode,unused
-func main() {
-	rootCmd := &cobra.Command{Use: "plugin"}
-	rootCmd.AddCommand(getDescriptorCmd)
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-	}
 }

@@ -25,6 +25,10 @@ type OutputFormatter struct {
 	file      *os.File
 }
 
+var _ formatters.TableOutputFormatter = (*OutputFormatter)(nil)
+var _ formatters.RowOutputFormatter = (*OutputFormatter)(nil)
+var _ formatters.OutputFormatter = (*OutputFormatter)(nil)
+
 type OutputFormatterOption func(*OutputFormatter)
 
 func WithOutputFile(outputFile string) OutputFormatterOption {

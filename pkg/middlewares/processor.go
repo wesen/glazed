@@ -111,6 +111,13 @@ func (p *TableProcessor) Close(ctx context.Context) error {
 // AddRow runs row through the chain of ObjectMiddlewares, then RowMiddlewares and
 // adds the resulting rows to the table.
 func (p *TableProcessor) AddRow(ctx context.Context, row types.Row) error {
+	// check if context was cancelled
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+	}
+
 	rows := []types.Row{row}
 
 	for _, ow := range p.ObjectMiddlewares {

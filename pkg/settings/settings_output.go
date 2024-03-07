@@ -85,15 +85,19 @@ func (ofs *OutputFormatterSettings) computeCanonicalFormat() error {
 	if ofs.Output == "csv" {
 		ofs.Output = "table"
 		ofs.TableFormat = "csv"
+		ofs.Stream = true
 	} else if ofs.Output == "tsv" {
 		ofs.Output = "table"
 		ofs.TableFormat = "tsv"
+		ofs.Stream = true
 	} else if ofs.Output == "markdown" {
 		ofs.Output = "table"
 		ofs.TableFormat = "markdown"
+		ofs.Stream = true
 	} else if ofs.Output == "html" {
 		ofs.Output = "table"
 		ofs.TableFormat = "html"
+		ofs.Stream = true
 	}
 
 	if ofs.OutputMultipleFiles {

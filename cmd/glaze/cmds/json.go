@@ -14,6 +14,7 @@ import (
 	"github.com/pkg/errors"
 	"io"
 	"os"
+	"strings"
 )
 
 type JsonCommand struct {
@@ -27,6 +28,7 @@ type JsonSettings struct {
 	Sanitize     bool     `glazed.parameter:"sanitize"`
 	FromMarkdown bool     `glazed.parameter:"from-markdown"`
 	InputFiles   []string `glazed.parameter:"input-files"`
+	IsNDJson     bool     `glazed.parameter:"is-ndjson"`
 }
 
 func NewJsonCommand() (*JsonCommand, error) {
@@ -56,6 +58,12 @@ func NewJsonCommand() (*JsonCommand, error) {
 					"from-markdown",
 					parameters.ParameterTypeBool,
 					parameters.WithHelp("Input is markdown"),
+					parameters.WithDefault(false),
+				),
+				parameters.NewParameterDefinition(
+					"is-ndjson",
+					parameters.ParameterTypeBool,
+					parameters.WithHelp("Input is NDJSON"),
 					parameters.WithDefault(false),
 				),
 			),
@@ -101,6 +109,42 @@ func (j *JsonCommand) RunIntoGlazeProcessor(ctx context.Context, parsedLayers *l
 			if err != nil {
 				return errors.Wrapf(err, "Error opening file %s", arg)
 			}
+		}
+
+		if s.IsNDJson || strings.HasSuffix(arg, ".ndjson") {
+			// read ndjson file
+			dec := json.NewDecoder(f)
+			for {
+				if s.InputIsArray {
+					data := make([]types.Row, 0)
+					if err := dec.Decode(&data); err == io.EOF {
+						break
+					} else if err != nil {
+						return errors.Errorf("Error decoding file %s as ndjson", arg)
+					}
+
+					for _, d := range data {
+						err = gp.AddRow(ctx, d)
+						if err != nil {
+							return errors.Wrapf(err, "Error processing file %s as ndjson", arg)
+						}
+					}
+				} else {
+					var data types.Row
+					if err := dec.Decode(&data); err == io.EOF {
+						break
+					} else if err != nil {
+						return errors.Wrapf(err, "Error decoding file %s as ndjson", arg)
+					}
+
+					err = gp.AddRow(ctx, data)
+					if err != nil {
+						return errors.Wrapf(err, "Error processing file %s as ndjson", arg)
+					}
+				}
+			}
+
+			return nil
 		}
 
 		if s.InputIsArray {

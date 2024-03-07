@@ -1,9 +1,11 @@
 package cmds
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/go-go-golems/glazed/pkg/cmds"
 	"github.com/go-go-golems/glazed/pkg/cmds/layers"
 	"github.com/go-go-golems/glazed/pkg/cmds/parameters"
@@ -29,6 +31,7 @@ type JsonSettings struct {
 	FromMarkdown bool     `glazed.parameter:"from-markdown"`
 	InputFiles   []string `glazed.parameter:"input-files"`
 	IsNDJson     bool     `glazed.parameter:"is-ndjson"`
+	SkipInvalid  bool     `glazed.parameter:"skip-invalid"`
 }
 
 func NewJsonCommand() (*JsonCommand, error) {
@@ -66,6 +69,12 @@ func NewJsonCommand() (*JsonCommand, error) {
 					parameters.WithHelp("Input is NDJSON"),
 					parameters.WithDefault(false),
 				),
+				parameters.NewParameterDefinition(
+					"skip-invalid",
+					parameters.ParameterTypeBool,
+					parameters.WithHelp("Skip invalid JSON objects"),
+					parameters.WithDefault(false),
+				),
 			),
 			cmds.WithArguments(
 				parameters.NewParameterDefinition(
@@ -89,6 +98,13 @@ func (j *JsonCommand) RunIntoGlazeProcessor(ctx context.Context, parsedLayers *l
 	}
 
 	for _, arg := range s.InputFiles {
+		// check if context was cancelled
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
+
 		if arg == "-" {
 			arg = "/dev/stdin"
 		}
@@ -112,36 +128,61 @@ func (j *JsonCommand) RunIntoGlazeProcessor(ctx context.Context, parsedLayers *l
 		}
 
 		if s.IsNDJson || strings.HasSuffix(arg, ".ndjson") {
-			// read ndjson file
-			dec := json.NewDecoder(f)
-			for {
+			// Create a scanner to read from stdin
+			scanner := bufio.NewScanner(f)
+			i := 0
+			for scanner.Scan() {
+				// check if context was cancelled
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				default:
+				}
+
+				line := scanner.Text()
+
+				// Use a string reader to create a new decoder for each line
+				dec := json.NewDecoder(strings.NewReader(line))
+
 				if s.InputIsArray {
 					data := make([]types.Row, 0)
-					if err := dec.Decode(&data); err == io.EOF {
-						break
-					} else if err != nil {
-						return errors.Errorf("Error decoding file %s as ndjson", arg)
+					if err := dec.Decode(&data); err != nil {
+						if s.SkipInvalid {
+							_, _ = fmt.Fprintf(os.Stderr, "Error decoding line as ndjson: %s at object %d\n", err, i)
+							i++
+							continue
+						}
+						return errors.Errorf("Error decoding line as ndjson")
 					}
 
 					for _, d := range data {
 						err = gp.AddRow(ctx, d)
 						if err != nil {
-							return errors.Wrapf(err, "Error processing file %s as ndjson", arg)
+							return errors.Wrapf(err, "Error processing line as ndjson")
 						}
 					}
 				} else {
 					var data types.Row
-					if err := dec.Decode(&data); err == io.EOF {
-						break
-					} else if err != nil {
-						return errors.Wrapf(err, "Error decoding file %s as ndjson", arg)
+					if err := dec.Decode(&data); err != nil {
+						if s.SkipInvalid {
+							_, _ = fmt.Fprintf(os.Stderr, "Error decoding line as ndjson: %s at object %d\n", err, i)
+							i++
+							continue
+						}
+						return errors.Wrapf(err, "Error decoding line as ndjson")
 					}
 
 					err = gp.AddRow(ctx, data)
 					if err != nil {
-						return errors.Wrapf(err, "Error processing file %s as ndjson", arg)
+						return errors.Wrapf(err, "Error processing line as ndjson")
 					}
 				}
+
+				i++
+			}
+
+			if err := scanner.Err(); err != nil {
+				return errors.Wrapf(err, "Error reading input")
 			}
 
 			return nil

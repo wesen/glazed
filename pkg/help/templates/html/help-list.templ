@@ -1,0 +1,68 @@
+package html
+
+type HelpList struct {
+    AllGeneralTopics  []Topic
+    AllExamples      []Topic
+    AllApplications  []Topic
+    AllTutorials     []Topic
+}
+
+templ HelpListTemplate(help HelpList, helpCommand string) {
+    <div class="help-list">
+        if len(help.AllGeneralTopics) > 0 {
+            <section class="general-topics">
+                <h2>General topics</h2>
+                <p class="instruction">
+                    Run <code>{ helpCommand } &lt;topic&gt;</code> to view a topic's page.
+                </p>
+                <ul>
+                    for _, topic := range help.AllGeneralTopics {
+                        <li><code>{ topic.Slug }</code> - { topic.Title }</li>
+                    }
+                </ul>
+            </section>
+        }
+
+        if len(help.AllExamples) > 0 {
+            <section class="examples">
+                <h2>Examples</h2>
+                <p class="instruction">
+                    Run <code>{ helpCommand } &lt;example&gt;</code> to view an example in full.
+                </p>
+                <ul>
+                    for _, example := range help.AllExamples {
+                        <li><code>{ example.Slug }</code> - { example.Title }</li>
+                    }
+                </ul>
+            </section>
+        }
+
+        if len(help.AllApplications) > 0 {
+            <section class="applications">
+                <h2>Applications</h2>
+                <p class="instruction">
+                    Run <code>{ helpCommand } &lt;application&gt;</code> to view an application in full.
+                </p>
+                <ul>
+                    for _, app := range help.AllApplications {
+                        <li><code>{ app.Slug }</code> - { app.Title }</li>
+                    }
+                </ul>
+            </section>
+        }
+
+        if len(help.AllTutorials) > 0 {
+            <section class="tutorials">
+                <h2>Tutorials</h2>
+                <p class="instruction">
+                    Run <code>{ helpCommand } &lt;tutorial&gt;</code> to view a tutorial in full.
+                </p>
+                <ul>
+                    for _, tutorial := range help.AllTutorials {
+                        <li><code>{ tutorial.Slug }</code> - { tutorial.Title }</li>
+                    }
+                </ul>
+            </section>
+        }
+    </div>
+} 

@@ -1,0 +1,186 @@
+package html
+
+type CobraCommand struct {
+    Runnable               bool
+    UseLine               string
+    HasAvailableSubCommands bool
+    CommandPath           string
+    Aliases              []string
+    NameAndAliases       string
+    HasExample           bool
+    Example              string
+    Commands             []CobraSubCommand
+    Groups               []CobraGroup
+    Sections             []Topic
+    FlagGroupUsage       *FlagGroupUsage
+    HasAvailableLocalFlags bool
+    LocalFlags           string
+    HasAvailableInheritedFlags bool
+    InheritedFlags       string
+    HasHelpSubCommands   bool
+    LongHelp             bool
+}
+
+type CobraSubCommand struct {
+    Name            string
+    Short           string
+    IsAvailableCommand bool
+    GroupID         string
+    NamePadding     int
+}
+
+type CobraGroup struct {
+    ID    string
+    Title string
+}
+
+type FlagGroupUsage struct {
+    LocalGroupUsages     []FlagGroup
+    InheritedGroupUsages []FlagGroup
+    FlagUsageMaxLength   int
+}
+
+type FlagGroup struct {
+    Name       string
+    FlagUsages []FlagUsage
+}
+
+type FlagUsage struct {
+    FlagString string
+    Help       string
+    Default    string
+}
+
+templ CobraUsage(cmd CobraCommand) {
+    <div class="cobra-usage">
+        <section class="usage">
+            <h2>Usage:</h2>
+            if cmd.Runnable {
+                <code>{ cmd.UseLine }</code>
+            }
+            if cmd.HasAvailableSubCommands {
+                <code>{ cmd.CommandPath } [command]</code>
+            }
+        </section>
+
+        if len(cmd.Aliases) > 0 {
+            <section class="aliases">
+                <h2>Aliases:</h2>
+                <p>{ cmd.NameAndAliases }</p>
+            </section>
+        }
+
+        if cmd.HasExample {
+            <section class="examples">
+                <h2>Examples:</h2>
+                <pre>{ cmd.Example }</pre>
+            </section>
+        }
+
+        if cmd.HasAvailableSubCommands {
+            if len(cmd.Groups) == 0 {
+                <section class="available-commands">
+                    <h2>Available Commands:</h2>
+                    <ul>
+                        for _, subcmd := range cmd.Commands {
+                            if subcmd.IsAvailableCommand || subcmd.Name == "help" {
+                                <li>
+                                    <code>{ subcmd.Name }</code>
+                                    <span class="description">{ subcmd.Short }</span>
+                                </li>
+                            }
+                        }
+                    </ul>
+                </section>
+            } else {
+                for _, group := range cmd.Groups {
+                    <section class="command-group">
+                        <h2>{ group.Title }</h2>
+                        <ul>
+                            for _, subcmd := range cmd.Commands {
+                                if subcmd.GroupID == group.ID && (subcmd.IsAvailableCommand || subcmd.Name == "help") {
+                                    <li>
+                                        <code>{ subcmd.Name }</code>
+                                        <span class="description">{ subcmd.Short }</span>
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </section>
+                }
+            }
+        }
+
+        if len(cmd.Sections) > 0 {
+            <section class="additional-topics">
+                <h2>Additional Topics:</h2>
+                <ul>
+                    for _, section := range cmd.Sections {
+                        <li>
+                            <code>{ section.Slug }</code>
+                            <span class="description">{ section.Title }</span>
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
+
+        if cmd.FlagGroupUsage != nil {
+            for _, group := range cmd.FlagGroupUsage.LocalGroupUsages {
+                if len(group.FlagUsages) > 0 {
+                    <section class="flag-group">
+                        <h2>{ group.Name }:</h2>
+                        <pre class="flag-list">
+                            for _, usage := range group.FlagUsages {
+                                <div class="flag-entry">
+                                    <code class="flag">{ usage.FlagString }</code>
+                                    <span class="help">{ usage.Help }{ usage.Default }</span>
+                                </div>
+                            }
+                        </pre>
+                    </section>
+                }
+            }
+
+            for _, group := range cmd.FlagGroupUsage.InheritedGroupUsages {
+                if len(group.FlagUsages) > 0 {
+                    <section class="flag-group inherited">
+                        <h2>Global { group.Name }:</h2>
+                        <pre class="flag-list">
+                            for _, usage := range group.FlagUsages {
+                                <div class="flag-entry">
+                                    <code class="flag">{ usage.FlagString }</code>
+                                    <span class="help">{ usage.Help }{ usage.Default }</span>
+                                </div>
+                            }
+                        </pre>
+                    </section>
+                }
+            }
+        } else {
+            if cmd.HasAvailableLocalFlags {
+                <section class="flags">
+                    <h2>Flags:</h2>
+                    <pre>{ cmd.LocalFlags }</pre>
+                </section>
+            }
+            if cmd.HasAvailableInheritedFlags {
+                <section class="global-flags">
+                    <h2>Global Flags:</h2>
+                    <pre>{ cmd.InheritedFlags }</pre>
+                </section>
+            }
+        }
+
+        if cmd.HasAvailableSubCommands {
+            <p class="help-hint">
+                Use <code>{ cmd.CommandPath } [command] --help</code> for more information about a command.
+            </p>
+        }
+        if !cmd.LongHelp {
+            <p class="help-hint">
+                Use <code>{ cmd.CommandPath } --help --long-help</code> for information about all flags.
+            </p>
+        }
+    </div>
+} 

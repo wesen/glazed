@@ -1,0 +1,65 @@
+package html
+
+templ HelpLongSectionList(help HelpList, helpCommand string) {
+    <div class="help-long-section-list">
+        if len(help.AllGeneralTopics) > 0 {
+            <div class="general-topics">
+                for _, topic := range help.AllGeneralTopics {
+                    <section class="topic">
+                        <h2>{ topic.Title }:</h2>
+                        <p>{ topic.Short }</p>
+                        <p class="learn-more">
+                            To learn more, run:
+                            <code>{ helpCommand } { topic.Slug }</code>
+                        </p>
+                    </section>
+                }
+            </div>
+        }
+
+        if len(help.AllExamples) > 0 {
+            <div class="examples">
+                <h2>Examples:</h2>
+                for _, example := range help.AllExamples {
+                    <section class="example">
+                        <h3>{ example.Title }</h3>
+                        <p>{ example.Short }</p>
+                        <div class="content">{ example.Content }</div>
+                    </section>
+                }
+            </div>
+        }
+
+        if len(help.AllApplications) > 0 {
+            <div class="applications">
+                <h2>Applications:</h2>
+                for _, app := range help.AllApplications {
+                    <section class="application">
+                        <h3>{ app.Title }:</h3>
+                        <p>{ app.Short }</p>
+                        <p class="learn-more">
+                            To learn more, run:
+                            <code>{ helpCommand } { app.Slug }</code>
+                        </p>
+                    </section>
+                }
+            </div>
+        }
+
+        if len(help.AllTutorials) > 0 {
+            <div class="tutorials">
+                <h2>Tutorials:</h2>
+                for _, tutorial := range help.AllTutorials {
+                    <section class="tutorial">
+                        <h3>{ tutorial.Title }:</h3>
+                        <p>{ tutorial.Short }</p>
+                        <p class="learn-more">
+                            To learn more, run:
+                            <code>{ helpCommand } { tutorial.Slug }</code>
+                        </p>
+                    </section>
+                }
+            </div>
+        }
+    </div>
+} 

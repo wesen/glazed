@@ -1,0 +1,31 @@
+package html
+
+type ShortTopicData struct {
+    Topic           Topic
+    NoResultsFound  bool
+    RequestedTypes  string
+    QueryString     string
+}
+
+templ HelpShortTopic(data ShortTopicData) {
+    <div class="help-short-topic">
+        <div class="topic-content">
+            <h1>{ data.Topic.Title }:</h1>
+            <p>{ data.Topic.Short }</p>
+        </div>
+        <hr/>
+        if data.NoResultsFound {
+            <div class="no-results">
+                <p class="error">
+                    <strong>
+                        No { data.RequestedTypes } found
+                        if data.QueryString != "" {
+                            for { data.QueryString }
+                        }!
+                    </strong>
+                </p>
+                <p>Showing a list of alternatives:</p>
+            </div>
+        }
+    </div>
+} 

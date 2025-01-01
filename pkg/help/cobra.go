@@ -3,13 +3,14 @@ package help
 import (
 	_ "embed"
 	"fmt"
+	"os"
+	"strings"
+	"text/template"
+
 	"github.com/Masterminds/sprig"
 	glazed_cobra "github.com/go-go-golems/glazed/pkg/cmds/layers"
 	"github.com/go-go-golems/glazed/pkg/helpers/templating"
 	"github.com/spf13/cobra"
-	"os"
-	"strings"
-	"text/template"
 )
 
 type HelpFunc = func(c *cobra.Command, args []string)

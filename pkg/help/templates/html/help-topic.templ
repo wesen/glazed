@@ -1,0 +1,15 @@
+package html
+
+templ HelpTopic(topic Topic) {
+    <div class="help-topic">
+        if topic.Title != "" {
+            <h1 class="topic-title">{ topic.Title }</h1>
+        }
+        if topic.Short != "" {
+            <p class="topic-short">{ topic.Short }</p>
+        }
+        if topic.Content != "" {
+            <div class="topic-content">{ topic.Content }</div>
+        }
+    </div>
+} 

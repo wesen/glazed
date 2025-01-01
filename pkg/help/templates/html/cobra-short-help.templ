@@ -1,0 +1,36 @@
+package html
+
+type CobraShortHelpData struct {
+    Command         Command
+    NoResultsFound  bool
+    RequestedTypes  string
+    QueryString     string
+    HelpCommand     string
+}
+
+templ CobraShortHelp(data CobraShortHelpData) {
+    <div class="cobra-short-help">
+        <h1>{ data.Command.Name } - { data.Command.Short }</h1>
+        <p class="long-description">{ data.Command.Long }</p>
+
+        if data.NoResultsFound {
+            <hr/>
+            <div class="no-results">
+                <p class="error">
+                    <strong>
+                        No { data.RequestedTypes } found
+                        if data.QueryString != "" {
+                            for { data.QueryString }
+                        }!
+                    </strong>
+                </p>
+                <p>Showing a list of alternatives:</p>
+            </div>
+        }
+
+        <p class="help-hint">
+            For more help, run:
+            <code>{ data.HelpCommand } { data.Command.Name }</code>
+        </p>
+    </div>
+} 

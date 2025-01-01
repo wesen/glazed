@@ -1,0 +1,96 @@
+package html
+
+templ HelpShortSectionList(help Help, helpCommand string, slug string) {
+    <div class="help-sections">
+        if len(help.DefaultGeneralTopics) > 0 {
+            <div class="general-topics">
+                for _, topic := range help.DefaultGeneralTopics {
+                    <section class="topic">
+                        <h2>{ topic.Title }</h2>
+                        <p>{ topic.Short }</p>
+                        <p class="learn-more">
+                            To learn more, run:
+                            <code>{ helpCommand } { topic.Slug }</code>
+                        </p>
+                    </section>
+                }
+            </div>
+        }
+
+        if len(help.OtherGeneralTopics) > 0 {
+            <p class="more-topics">
+                To see more examples for this topic, run:
+                <code>{ helpCommand } { slug } --topics</code>
+            </p>
+        }
+
+        if len(help.DefaultExamples) > 0 {
+            <div class="examples">
+                <h2>Examples:</h2>
+                for _, example := range help.DefaultExamples {
+                    <section class="example">
+                        <h3>{ example.Title }</h3>
+                        <p>{ example.Short }</p>
+                        <p class="learn-more">
+                            To learn more, run:
+                            <code>{ helpCommand } { example.Slug }</code>
+                        </p>
+                    </section>
+                }
+            </div>
+        }
+
+        if len(help.OtherExamples) > 0 {
+            <p class="more-examples">
+                To see more examples, run:
+                <code>{ helpCommand } { slug } --examples</code>
+            </p>
+        }
+
+        if len(help.DefaultApplications) > 0 {
+            <div class="applications">
+                <h2>Applications:</h2>
+                for _, app := range help.DefaultApplications {
+                    <section class="application">
+                        <h3>{ app.Title }</h3>
+                        <p>{ app.Short }</p>
+                        <p class="learn-more">
+                            To learn more, run:
+                            <code>{ helpCommand } { app.Slug }</code>
+                        </p>
+                    </section>
+                }
+            </div>
+        }
+
+        if len(help.OtherApplications) > 0 {
+            <p class="more-applications">
+                To see more applications, run:
+                <code>{ helpCommand } { slug } --applications</code>
+            </p>
+        }
+
+        if len(help.DefaultTutorials) > 0 {
+            <div class="tutorials">
+                <h2>Tutorials:</h2>
+                for _, tutorial := range help.DefaultTutorials {
+                    <section class="tutorial">
+                        <h3>{ tutorial.Title }</h3>
+                        <p>{ tutorial.Short }</p>
+                        <p class="learn-more">
+                            To learn more, run:
+                            <code>{ helpCommand } { tutorial.Slug }</code>
+                        </p>
+                    </section>
+                }
+            </div>
+        }
+
+        if len(help.OtherTutorials) > 0 {
+            <p class="more-tutorials">
+                To see more tutorials, run:
+                <code>{ helpCommand } { slug } --tutorials</code>
+            </p>
+        }
+    </div>
+} 

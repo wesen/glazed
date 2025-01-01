@@ -2,15 +2,16 @@ package help
 
 import (
 	"bytes"
+	"io/fs"
+	"path/filepath"
+	"sort"
+	"strings"
+
 	"github.com/adrg/frontmatter"
 	strings2 "github.com/go-go-golems/glazed/pkg/helpers/strings"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
-	"io/fs"
-	"path/filepath"
-	"sort"
-	"strings"
 )
 
 type SectionType int

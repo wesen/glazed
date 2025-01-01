@@ -1,0 +1,18 @@
+package html
+
+type Command struct {
+    Name        string
+    Short       string
+    Long        string
+}
+
+templ CobraHelp(cmd Command, helpCommand string) {
+    <div class="cobra-help">
+        <h1>{ cmd.Name } - { cmd.Short }</h1>
+        <p class="long-description">{ cmd.Long }</p>
+        <p class="help-hint">
+            For more help, run:
+            <code>{ helpCommand } { cmd.Name }</code>
+        </p>
+    </div>
+} 

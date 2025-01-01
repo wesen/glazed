@@ -1,82 +1,28 @@
 package templates
 
-import "fmt"
-
 templ Results(result *QueryResult) {
 	<div class="mt-4">
 		if result != nil && result.Query != nil {
 			@QueryView(result.Query)
 
-			<div class="list-group">
-				for _, topic := range result.Topics {
-					<div class="list-group-item">
-						<div class="d-flex w-100 justify-content-between">
-							<h5 class="mb-1">{ topic.Title }</h5>
-							<span class="badge bg-info">{ topic.SectionType.String() }</span>
-						</div>
-						if topic.Short != "" {
-							<p class="mb-1">{ topic.Short }</p>
-						}
-						<small class="text-muted mb-2 d-block">Slug: { topic.Slug }</small>
-						
-						<button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target={ "#details-" + topic.Slug }>
-							Toggle Details
-						</button>
-						<div class="collapse mt-3" id={ "details-" + topic.Slug }>
-							<dl class="row">
-								if topic.SubTitle != "" {
-									<dt class="col-sm-3">Subtitle</dt>
-									<dd class="col-sm-9">{ topic.SubTitle }</dd>
-								}
-								if len(topic.Topics) > 0 {
-									<dt class="col-sm-3">Topics</dt>
-									<dd class="col-sm-9">
-										for _, t := range topic.Topics {
-											<span class="badge bg-secondary me-1">{ t }</span>
-										}
-									</dd>
-								}
-								if len(topic.Flags) > 0 {
-									<dt class="col-sm-3">Flags</dt>
-									<dd class="col-sm-9">
-										for _, f := range topic.Flags {
-											<span class="badge bg-secondary me-1">{ f }</span>
-										}
-									</dd>
-								}
-								if len(topic.Commands) > 0 {
-									<dt class="col-sm-3">Commands</dt>
-									<dd class="col-sm-9">
-										for _, c := range topic.Commands {
-											<span class="badge bg-secondary me-1">{ c }</span>
-										}
-									</dd>
-								}
-								<dt class="col-sm-3">Properties</dt>
-								<dd class="col-sm-9">
-									if topic.IsTopLevel {
-										<span class="badge bg-secondary me-1">Top Level</span>
-									}
-									if topic.IsTemplate {
-										<span class="badge bg-secondary me-1">Template</span>
-									}
-									if topic.ShowPerDefault {
-										<span class="badge bg-secondary me-1">Shown by Default</span>
-									}
-								</dd>
-								if topic.Order != 0 {
-									<dt class="col-sm-3">Order</dt>
-									<dd class="col-sm-9">{ fmt.Sprint(topic.Order) }</dd>
-								}
-							</dl>
-						</div>
+			if result.HelpPage != nil {
+				@SectionList("Default General Topics", result.HelpPage.DefaultGeneralTopics)
+				@SectionList("Other General Topics", result.HelpPage.OtherGeneralTopics)
+				@SectionList("Default Examples", result.HelpPage.DefaultExamples)
+				@SectionList("Other Examples", result.HelpPage.OtherExamples)
+				@SectionList("Default Applications", result.HelpPage.DefaultApplications)
+				@SectionList("Other Applications", result.HelpPage.OtherApplications)
+				@SectionList("Default Tutorials", result.HelpPage.DefaultTutorials)
+				@SectionList("Other Tutorials", result.HelpPage.OtherTutorials)
+
+				if len(result.HelpPage.AllGeneralTopics) == 0 &&
+					len(result.HelpPage.AllExamples) == 0 &&
+					len(result.HelpPage.AllApplications) == 0 &&
+					len(result.HelpPage.AllTutorials) == 0 {
+					<div class="alert alert-info">
+						No results found for the current query.
 					</div>
 				}
-			</div>
-			if len(result.Topics) == 0 {
-				<div class="alert alert-info">
-					No results found for the current query.
-				</div>
 			}
 		}
 	</div>

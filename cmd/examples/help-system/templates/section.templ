@@ -1,0 +1,86 @@
+package templates
+
+import (
+	"fmt"
+	"github.com/go-go-golems/glazed/pkg/help"
+)
+
+templ SectionView(section *help.Section) {
+	<div class="list-group-item">
+		<div class="d-flex w-100 justify-content-between">
+			<h5 class="mb-1">{ section.Title }</h5>
+			<span class="badge bg-info">{ section.SectionType.String() }</span>
+		</div>
+		if section.Short != "" {
+			<p class="mb-1">{ section.Short }</p>
+		}
+		<small class="text-muted mb-2 d-block">Slug: { section.Slug }</small>
+		
+		<button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target={ "#details-" + section.Slug }>
+			Toggle Details
+		</button>
+		<div class="collapse mt-3" id={ "details-" + section.Slug }>
+			<dl class="row">
+				if section.SubTitle != "" {
+					<dt class="col-sm-3">Subtitle</dt>
+					<dd class="col-sm-9">{ section.SubTitle }</dd>
+				}
+				if len(section.Topics) > 0 {
+					<dt class="col-sm-3">Topics</dt>
+					<dd class="col-sm-9">
+						for _, t := range section.Topics {
+							<span class="badge bg-secondary me-1">{ t }</span>
+						}
+					</dd>
+				}
+				if len(section.Flags) > 0 {
+					<dt class="col-sm-3">Flags</dt>
+					<dd class="col-sm-9">
+						for _, f := range section.Flags {
+							<span class="badge bg-secondary me-1">{ f }</span>
+						}
+					</dd>
+				}
+				if len(section.Commands) > 0 {
+					<dt class="col-sm-3">Commands</dt>
+					<dd class="col-sm-9">
+						for _, c := range section.Commands {
+							<span class="badge bg-secondary me-1">{ c }</span>
+						}
+					</dd>
+				}
+				<dt class="col-sm-3">Properties</dt>
+				<dd class="col-sm-9">
+					if section.IsTopLevel {
+						<span class="badge bg-secondary me-1">Top Level</span>
+					}
+					if section.IsTemplate {
+						<span class="badge bg-secondary me-1">Template</span>
+					}
+					if section.ShowPerDefault {
+						<span class="badge bg-secondary me-1">Shown by Default</span>
+					}
+				</dd>
+				if section.Order != 0 {
+					<dt class="col-sm-3">Order</dt>
+					<dd class="col-sm-9">{ fmt.Sprint(section.Order) }</dd>
+				}
+			</dl>
+		</div>
+	</div>
+}
+
+templ SectionList(title string, sections []*help.Section) {
+	if len(sections) > 0 {
+		<div class="card mb-4">
+			<div class="card-header">
+				<h5 class="mb-0">{ title } ({ fmt.Sprint(len(sections)) })</h5>
+			</div>
+			<div class="list-group list-group-flush">
+				for _, section := range sections {
+					@SectionView(section)
+				}
+			</div>
+		</div>
+	}
+} 

@@ -12,8 +12,8 @@ import (
 
 // QueryResult represents the data passed to the templates
 type QueryResult struct {
-	Topics []*help.Section
-	Query  *help.SectionQuery
+	HelpPage *help.HelpPage
+	Query    *help.SectionQuery
 }
 
 func createServeCommand(hs *help.HelpSystem) *cobra.Command {
@@ -90,12 +90,13 @@ func createServeCommand(hs *help.HelpSystem) *cobra.Command {
 					query = query.ReturnAllTypes()
 				}
 
-				data, _ := hs.ComputeRenderData(query)
+				data, noResultsFound := hs.ComputeRenderData(query)
 				helpData := data["Help"].(*help.HelpPage)
+				_ = noResultsFound
 
 				result := &templates.QueryResult{
-					Topics: helpData.AllGeneralTopics,
-					Query:  query,
+					HelpPage: helpData,
+					Query:    query,
 				}
 
 				err = templates.Results(result).Render(context.Background(), w)

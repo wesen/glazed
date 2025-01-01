@@ -1,12 +1,5 @@
 package templates
 
-import "github.com/go-go-golems/glazed/pkg/help"
-
-type QueryResult struct {
-	Topics []*help.Section
-	Query  *help.SectionQuery
-}
-
 templ QueryForm(result *QueryResult) {
 	@Layout() {
 		<div class="card shadow-sm">
@@ -73,25 +66,8 @@ templ QueryForm(result *QueryResult) {
 					</div>
 				</form>
 
-				<div id="results" class="mt-4">
-					if result != nil {
-						<div class="list-group">
-							for _, topic := range result.Topics {
-								<div class="list-group-item">
-									<h5 class="mb-1">{ topic.Title }</h5>
-									if topic.Short != "" {
-										<p class="mb-1">{ topic.Short }</p>
-									}
-									<small class="text-muted">Slug: { topic.Slug }</small>
-								</div>
-							}
-						</div>
-						if len(result.Topics) == 0 {
-							<div class="alert alert-info">
-								No results found for the current query.
-							</div>
-						}
-					}
+				<div id="results">
+					@Results(result)
 				</div>
 			</div>
 		</div>

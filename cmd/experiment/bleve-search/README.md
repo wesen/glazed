@@ -47,11 +47,29 @@ Search with field filters:
 # Search for "format" in GeneralTopic sections
 ./bleve-search field-search --type GeneralTopic "format"
 
+# List all Example sections
+./bleve-search field-search --type Example
+
+# Valid section types are:
+# - GeneralTopic
+# - Example
+# - Application
+# - Tutorial
+
 # Search for "example" in top-level sections
 ./bleve-search field-search --top-level "example"
 
+# List all top-level sections
+./bleve-search field-search --top-level
+
 # Combine filters
 ./bleve-search field-search --type Example --top-level --limit 3 "format"
+
+# List all Example sections that are top-level
+./bleve-search field-search --type Example --top-level
+
+# Debug index contents
+./bleve-search debug  # Shows section types and counts in the index
 ```
 
 ## Search Query Syntax

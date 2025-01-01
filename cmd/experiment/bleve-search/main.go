@@ -38,6 +38,10 @@ type SectionDocument struct {
 	Order          int
 }
 
+func (sd SectionDocument) Type() string {
+	return "section"
+}
+
 // createIndexMapping creates a bleve index mapping for help sections
 func createIndexMapping() mapping.IndexMapping {
 	indexMapping := bleve.NewIndexMapping()
@@ -91,9 +95,15 @@ func NewBleveHelpIndex(hs *help.HelpSystem, indexPath string) (*BleveHelpIndex, 
 		// Create new index if it doesn't exist
 		mapping := createIndexMapping()
 		index, err = bleve.New(indexPath, mapping)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to create bleve index")
+		}
 	} else {
 		// Open existing index
 		index, err = bleve.Open(indexPath)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to open bleve index")
+		}
 	}
 
 	if err != nil {
@@ -168,6 +178,7 @@ func init() {
 	rootCmd.AddCommand(createIndexCommand())
 	rootCmd.AddCommand(createSearchCommand())
 	rootCmd.AddCommand(createFieldSearchCommand())
+	rootCmd.AddCommand(createDebugCommand())
 }
 
 func createIndexCommand() *cobra.Command {
@@ -264,11 +275,24 @@ func createFieldSearchCommand() *cobra.Command {
 		isTopLevel  bool
 	)
 
+	validTypes := map[string]bool{
+		"GeneralTopic": true,
+		"Example":      true,
+		"Application":  true,
+		"Tutorial":     true,
+	}
+
 	cmd := &cobra.Command{
 		Use:   "field-search [query]",
 		Short: "Search help documentation with field filters",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// Validate section type
+			// if sectionType != "" && !validTypes[sectionType] {
+			// 	return fmt.Errorf("invalid section type %q. Valid types are: GeneralTopic, Example, Application, Tutorial", sectionType)
+			// }
+			_ = validTypes
+
 			// Open index
 			index, err := bleve.Open(indexPath)
 			if err != nil {
@@ -278,11 +302,19 @@ func createFieldSearchCommand() *cobra.Command {
 
 			// Create compound query
 			var queries []query.Query
-			queries = append(queries, bleve.NewQueryStringQuery(args[0]))
+
+			// If no search term is provided, match all documents
+			if len(args) > 0 {
+				queries = append(queries, bleve.NewQueryStringQuery(args[0]))
+			} else {
+				queries = append(queries, bleve.NewMatchAllQuery())
+			}
 
 			if sectionType != "" {
+				// Create a match query instead of term query for case-insensitive matching
 				typeQuery := bleve.NewTermQuery(sectionType)
 				typeQuery.SetField("SectionType")
+				fmt.Printf("Searching for section type: %q\n", sectionType)
 				queries = append(queries, typeQuery)
 			}
 
@@ -325,6 +357,50 @@ func createFieldSearchCommand() *cobra.Command {
 	cmd.Flags().IntVar(&limit, "limit", 10, "Maximum number of results to return")
 	cmd.Flags().StringVar(&sectionType, "type", "", "Filter by section type (GeneralTopic, Example, Application, Tutorial)")
 	cmd.Flags().BoolVar(&isTopLevel, "top-level", false, "Filter by top level status")
+
+	return cmd
+}
+
+func createDebugCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "debug",
+		Short: "Show debug information about the index",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// Open index
+			index, err := bleve.Open(indexPath)
+			if err != nil {
+				return errors.Wrap(err, "failed to open index")
+			}
+			defer index.Close()
+
+			// Create a match all query to get all documents
+			query := bleve.NewMatchAllQuery()
+			searchRequest := bleve.NewSearchRequest(query)
+			searchRequest.Size = 1000 // Get all documents
+			searchRequest.Fields = []string{"SectionType"}
+
+			// Execute search
+			searchResult, err := index.Search(searchRequest)
+			if err != nil {
+				return errors.Wrap(err, "failed to execute search")
+			}
+
+			// Print unique section types
+			sectionTypes := make(map[string]int)
+			for _, hit := range searchResult.Hits {
+				if sType, ok := hit.Fields["SectionType"].(string); ok {
+					sectionTypes[sType]++
+				}
+			}
+
+			fmt.Println("Section types in index:")
+			for sType, count := range sectionTypes {
+				fmt.Printf("  %s: %d documents\n", sType, count)
+			}
+
+			return nil
+		},
+	}
 
 	return cmd
 }

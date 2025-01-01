@@ -1,0 +1,102 @@
+package templates
+
+import "github.com/go-go-golems/glazed/pkg/help"
+
+templ QueryView(query *help.SectionQuery) {
+	<div class="card mb-4">
+		<div class="card-header">
+			<h5 class="mb-0">Query Parameters</h5>
+		</div>
+		<div class="card-body">
+			<dl class="row">
+				<dt class="col-sm-3">Return Types</dt>
+				<dd class="col-sm-9">{ query.GetRequestedTypesAsString() }</dd>
+
+				if query.SearchedCommand != "" {
+					<dt class="col-sm-3">Command Filter</dt>
+					<dd class="col-sm-9">{ query.SearchedCommand }</dd>
+				}
+				if query.SearchedSlug != "" {
+					<dt class="col-sm-3">Slug Filter</dt>
+					<dd class="col-sm-9">{ query.SearchedSlug }</dd>
+				}
+
+				if len(query.OnlyTopics) > 0 {
+					<dt class="col-sm-3">Required Topics</dt>
+					<dd class="col-sm-9">
+						for _, t := range query.OnlyTopics {
+							<span class="badge bg-primary me-1">{ t }</span>
+						}
+					</dd>
+				}
+				if len(query.OnlyFlags) > 0 {
+					<dt class="col-sm-3">Required Flags</dt>
+					<dd class="col-sm-9">
+						for _, f := range query.OnlyFlags {
+							<span class="badge bg-primary me-1">{ f }</span>
+						}
+					</dd>
+				}
+				if len(query.OnlyCommands) > 0 {
+					<dt class="col-sm-3">Required Commands</dt>
+					<dd class="col-sm-9">
+						for _, c := range query.OnlyCommands {
+							<span class="badge bg-primary me-1">{ c }</span>
+						}
+					</dd>
+				}
+
+				if !query.All {
+					if len(query.Topics) > 0 {
+						<dt class="col-sm-3">Match Any Topics</dt>
+						<dd class="col-sm-9">
+							for _, t := range query.Topics {
+								<span class="badge bg-info me-1">{ t }</span>
+							}
+						</dd>
+					}
+					if len(query.Flags) > 0 {
+						<dt class="col-sm-3">Match Any Flags</dt>
+						<dd class="col-sm-9">
+							for _, f := range query.Flags {
+								<span class="badge bg-info me-1">{ f }</span>
+							}
+						</dd>
+					}
+					if len(query.Commands) > 0 {
+						<dt class="col-sm-3">Match Any Commands</dt>
+						<dd class="col-sm-9">
+							for _, c := range query.Commands {
+								<span class="badge bg-info me-1">{ c }</span>
+							}
+						</dd>
+					}
+					if len(query.Slugs) > 0 {
+						<dt class="col-sm-3">Match Any Slugs</dt>
+						<dd class="col-sm-9">
+							for _, s := range query.Slugs {
+								<span class="badge bg-info me-1">{ s }</span>
+							}
+						</dd>
+					}
+				}
+
+				<dt class="col-sm-3">Filters</dt>
+				<dd class="col-sm-9">
+					if query.OnlyTopLevel {
+						<span class="badge bg-secondary me-1">Top Level Only</span>
+					}
+					if query.OnlyShownByDefault {
+						<span class="badge bg-secondary me-1">Shown By Default Only</span>
+					}
+					if query.OnlyNotShownByDefault {
+						<span class="badge bg-secondary me-1">Not Shown By Default Only</span>
+					}
+					if query.All {
+						<span class="badge bg-secondary me-1">Match All</span>
+					}
+				</dd>
+			</dl>
+		</div>
+	</div>
+} 

@@ -6,6 +6,7 @@ toolchain go1.23.2
 
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
+	github.com/a-h/templ v0.2.793
 	github.com/adrg/frontmatter v0.2.0
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/bmatcuk/doublestar/v4 v4.6.1
@@ -40,7 +41,6 @@ require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
-	github.com/a-h/templ v0.2.793 // indirect
 	github.com/alecthomas/chroma/v2 v2.14.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
@@ -52,6 +52,7 @@ require (
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-openapi/errors v0.22.0 // indirect
 	github.com/go-openapi/strfmt v0.23.0 // indirect
+	github.com/gomarkdown/markdown v0.0.0-20241205020045-f7e15b2f3e62 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect

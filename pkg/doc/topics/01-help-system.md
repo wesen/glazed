@@ -113,6 +113,7 @@ To get an overview of the toplevel help sections, you can run:
 ## Section structure
 
 Each section has:
+
 - a `Title`
 - a `SubTitle`
 - a `Short` description 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/go-go-golems/glazed/cmd/examples/help-system/templates"
 	"github.com/go-go-golems/glazed/pkg/help"
@@ -36,6 +37,35 @@ func createServeCommand(hs *help.HelpSystem) *cobra.Command {
 					Query: help.NewSectionQuery(),
 				}
 				err := templates.QueryForm(result).Render(context.Background(), w)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+			})
+
+			// Section view handler
+			mux.HandleFunc("/section/", func(w http.ResponseWriter, r *http.Request) {
+				if r.Method != http.MethodGet {
+					http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+					return
+				}
+
+				slug := strings.TrimPrefix(r.URL.Path, "/section/")
+				if slug == "" {
+					http.NotFound(w, r)
+					return
+				}
+
+				section, err := hs.GetSectionWithSlug(slug)
+				if err != nil {
+					http.NotFound(w, r)
+					return
+				}
+
+				data := &templates.SectionPageData{
+					Section: section,
+				}
+
+				err = templates.SectionPage(data).Render(context.Background(), w)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 				}

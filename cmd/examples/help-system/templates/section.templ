@@ -8,7 +8,9 @@ import (
 templ SectionView(section *help.Section) {
 	<div class="list-group-item">
 		<div class="d-flex w-100 justify-content-between">
-			<h5 class="mb-1">{ section.Title }</h5>
+			<h5 class="mb-1">
+				<a href={ templ.SafeURL("/section/" + section.Slug) } class="text-decoration-none">{ section.Title }</a>
+			</h5>
 			<span class="badge bg-info">{ section.SectionType.String() }</span>
 		</div>
 		if section.Short != "" {

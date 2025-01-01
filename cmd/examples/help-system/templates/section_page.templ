@@ -1,0 +1,135 @@
+package templates
+
+import (
+	"fmt"
+	"github.com/go-go-golems/glazed/pkg/help"
+	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/html"
+	"github.com/gomarkdown/markdown/parser"
+)
+
+type SectionPageData struct {
+	Section *help.Section
+}
+
+templ renderMarkdown(content string) {
+	@templ.Raw(string(markdown.ToHTML(
+		[]byte(content),
+		parser.NewWithExtensions(parser.CommonExtensions|parser.AutoHeadingIDs),
+		html.NewRenderer(html.RendererOptions{Flags: html.CommonFlags | html.HrefTargetBlank}),
+	)))
+}
+
+templ relatedSectionList(title string, sections []*help.Section) {
+	if len(sections) > 0 {
+		<div class="mb-3">
+			<h4 class="h6">{ title } ({ fmt.Sprint(len(sections)) })</h4>
+			<div class="list-group">
+				for _, section := range sections {
+					<a href={ templ.SafeURL("/section/" + section.Slug) } class="list-group-item list-group-item-action">
+						<div class="d-flex w-100 justify-content-between">
+							<h6 class="mb-1">{ section.Title }</h6>
+							<span class="badge bg-info">{ section.SectionType.String() }</span>
+						</div>
+						if section.Short != "" {
+							<small class="text-muted">@renderMarkdown(section.Short)
+</small>
+						}
+					</a>
+				}
+			</div>
+		</div>
+	}
+}
+
+templ SectionPage(data *SectionPageData) {
+	@Layout() {
+		<div class="container mt-4">
+			if data.Section != nil {
+				<nav aria-label="breadcrumb">
+					<ol class="breadcrumb">
+						<li class="breadcrumb-item"><a href="/">Home</a></li>
+						<li class="breadcrumb-item active" aria-current="page">{ data.Section.Title }</li>
+					</ol>
+				</nav>
+				<div class="card">
+					<div class="card-header d-flex justify-content-between align-items-center">
+						<h1 class="h3 mb-0">{ data.Section.Title }</h1>
+						<span class="badge bg-info">{ data.Section.SectionType.String() }</span>
+					</div>
+					<div class="card-body">
+						if data.Section.SubTitle != "" {
+							<h2 class="h5 text-muted mb-4">@renderMarkdown(data.Section.SubTitle)
+</h2>
+						}
+						if data.Section.Short != "" {
+							@renderMarkdown(data.Section.Short)
+						}
+						<div class="mb-4">
+							<h3 class="h5">Metadata</h3>
+							<dl class="row">
+								<dt class="col-sm-3">Slug</dt>
+								<dd class="col-sm-9">{ data.Section.Slug }</dd>
+								if len(data.Section.Topics) > 0 {
+									<dt class="col-sm-3">Topics</dt>
+									<dd class="col-sm-9">
+										for _, t := range data.Section.Topics {
+											<span class="badge bg-secondary me-1">{ t }</span>
+										}
+									</dd>
+								}
+								if len(data.Section.Flags) > 0 {
+									<dt class="col-sm-3">Flags</dt>
+									<dd class="col-sm-9">
+										for _, f := range data.Section.Flags {
+											<span class="badge bg-secondary me-1">{ f }</span>
+										}
+									</dd>
+								}
+								if len(data.Section.Commands) > 0 {
+									<dt class="col-sm-3">Commands</dt>
+									<dd class="col-sm-9">
+										for _, c := range data.Section.Commands {
+											<span class="badge bg-secondary me-1">{ c }</span>
+										}
+									</dd>
+								}
+								<dt class="col-sm-3">Properties</dt>
+								<dd class="col-sm-9">
+									if data.Section.IsTopLevel {
+										<span class="badge bg-secondary me-1">Top Level</span>
+									}
+									if data.Section.IsTemplate {
+										<span class="badge bg-secondary me-1">Template</span>
+									}
+									if data.Section.ShowPerDefault {
+										<span class="badge bg-secondary me-1">Shown by Default</span>
+									}
+								</dd>
+							</dl>
+						</div>
+						<div class="content mb-4">
+							@renderMarkdown(data.Section.Content)
+						</div>
+						if data.Section.HelpSystem != nil {
+							<div class="related-content">
+								<h3 class="h5 mb-3">Related Content</h3>
+								@relatedSectionList("Default General Topics", data.Section.DefaultGeneralTopic())
+								@relatedSectionList("Default Examples", data.Section.DefaultExamples())
+								@relatedSectionList("Other Examples", data.Section.OtherExamples())
+								@relatedSectionList("Default Applications", data.Section.DefaultApplications())
+								@relatedSectionList("Other Applications", data.Section.OtherApplications())
+								@relatedSectionList("Default Tutorials", data.Section.DefaultTutorials())
+								@relatedSectionList("Other Tutorials", data.Section.OtherTutorials())
+							</div>
+						}
+					</div>
+				</div>
+			} else {
+				<div class="alert alert-danger">
+					Section not found
+				</div>
+			}
+		</div>
+	}
+}

@@ -102,7 +102,7 @@ func (s *Section) IsForTopic(topic string) bool {
 	return strings2.StringInSlice(topic, s.Topics)
 }
 
-// these should potentially be scoped by command
+// these should potentially be scoped by command, also this only searches for the slug topic
 
 func (s *Section) DefaultGeneralTopic() []*Section {
 	return NewSectionQuery().

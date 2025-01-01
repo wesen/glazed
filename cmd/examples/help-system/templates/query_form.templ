@@ -1,0 +1,99 @@
+package templates
+
+import "github.com/go-go-golems/glazed/pkg/help"
+
+type QueryResult struct {
+	Topics []*help.Section
+	Query  *help.SectionQuery
+}
+
+templ QueryForm(result *QueryResult) {
+	@Layout() {
+		<div class="card shadow-sm">
+			<div class="card-header bg-primary text-white">
+				<h4 class="mb-0">Help System Query</h4>
+			</div>
+			<div class="card-body">
+				<form hx-post="/query" hx-target="#results" class="mb-4">
+					<div class="row g-3">
+						<div class="col-12">
+							<h5>Section Types</h5>
+							<div class="d-flex gap-3 flex-wrap">
+								<div class="form-check">
+									<input type="checkbox" class="form-check-input" id="topics" name="type" value="topics"/>
+									<label class="form-check-label" for="topics">Topics</label>
+								</div>
+								<div class="form-check">
+									<input type="checkbox" class="form-check-input" id="examples" name="type" value="examples"/>
+									<label class="form-check-label" for="examples">Examples</label>
+								</div>
+								<div class="form-check">
+									<input type="checkbox" class="form-check-input" id="applications" name="type" value="applications"/>
+									<label class="form-check-label" for="applications">Applications</label>
+								</div>
+								<div class="form-check">
+									<input type="checkbox" class="form-check-input" id="tutorials" name="type" value="tutorials"/>
+									<label class="form-check-label" for="tutorials">Tutorials</label>
+								</div>
+							</div>
+						</div>
+
+						<div class="col-12">
+							<h5>Filters</h5>
+							<div class="row g-2">
+								<div class="col-md-6">
+									<div class="form-floating">
+										<input type="text" class="form-control" id="command" name="command" placeholder="Command"/>
+										<label for="command">Command</label>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-floating">
+										<input type="text" class="form-control" id="slug" name="slug" placeholder="Slug"/>
+										<label for="slug">Slug</label>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="col-12">
+							<div class="form-check">
+								<input type="checkbox" class="form-check-input" id="onlyTopLevel" name="onlyTopLevel"/>
+								<label class="form-check-label" for="onlyTopLevel">Only Top Level</label>
+							</div>
+							<div class="form-check">
+								<input type="checkbox" class="form-check-input" id="onlyShownByDefault" name="onlyShownByDefault"/>
+								<label class="form-check-label" for="onlyShownByDefault">Only Shown By Default</label>
+							</div>
+						</div>
+
+						<div class="col-12">
+							<button type="submit" class="btn btn-primary">Search</button>
+						</div>
+					</div>
+				</form>
+
+				<div id="results" class="mt-4">
+					if result != nil {
+						<div class="list-group">
+							for _, topic := range result.Topics {
+								<div class="list-group-item">
+									<h5 class="mb-1">{ topic.Title }</h5>
+									if topic.Short != "" {
+										<p class="mb-1">{ topic.Short }</p>
+									}
+									<small class="text-muted">Slug: { topic.Slug }</small>
+								</div>
+							}
+						</div>
+						if len(result.Topics) == 0 {
+							<div class="alert alert-info">
+								No results found for the current query.
+							</div>
+						}
+					}
+				</div>
+			</div>
+		</div>
+	}
+} 

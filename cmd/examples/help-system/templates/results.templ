@@ -1,0 +1,24 @@
+package templates
+
+templ Results(result *QueryResult) {
+	<div class="mt-4">
+		if result != nil {
+			<div class="list-group">
+				for _, topic := range result.Topics {
+					<div class="list-group-item">
+						<h5 class="mb-1">{ topic.Title }</h5>
+						if topic.Short != "" {
+							<p class="mb-1">{ topic.Short }</p>
+						}
+						<small class="text-muted">Slug: { topic.Slug }</small>
+					</div>
+				}
+			</div>
+			if len(result.Topics) == 0 {
+				<div class="alert alert-info">
+					No results found for the current query.
+				</div>
+			}
+		}
+	</div>
+} 

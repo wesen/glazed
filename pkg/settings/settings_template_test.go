@@ -69,3 +69,23 @@ func TestTemplateFieldFlag(t *testing.T) {
 	assert.Equal(t, "test5", settings.Templates["test5"])
 	assert.Equal(t, "test6", settings.Templates["test6"])
 }
+
+func TestTemplateNameFlag(t *testing.T) {
+	// Test empty template name
+	settings := makeAndParse(t, NewTemplateFlagsDefaults())
+	assert.Equal(t, "", settings.TemplateName)
+
+	// Test setting template name via flag
+	settings = makeAndParse(t, NewTemplateFlagsDefaults(), "--template-name", "custom")
+	assert.Equal(t, "custom", settings.TemplateName)
+
+	// Test default template name from defaults
+	defaults := NewTemplateFlagsDefaults()
+	defaults.TemplateName = "default-template"
+	settings = makeAndParse(t, defaults)
+	assert.Equal(t, "default-template", settings.TemplateName)
+
+	// Test flag overriding default
+	settings = makeAndParse(t, defaults, "--template-name", "override")
+	assert.Equal(t, "override", settings.TemplateName)
+}

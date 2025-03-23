@@ -394,7 +394,7 @@ func SetupRowOutputFormatter(glazedLayer *layers.ParsedLayer) (formatters.RowOut
 	return of, nil
 }
 
-func SetupTableOutputFormatter(glazedLayer *layers.ParsedLayer) (formatters.TableOutputFormatter, error) {
+func SetupTableOutputFormatter(glazedLayer *layers.ParsedLayer, cmd *cmds.CommandDescription) (formatters.TableOutputFormatter, error) {
 	selectSettings, err := NewSelectSettingsFromParameters(glazedLayer)
 	if err != nil {
 		return nil, err
@@ -415,7 +415,7 @@ func SetupTableOutputFormatter(glazedLayer *layers.ParsedLayer) (formatters.Tabl
 			simple.WithOutputFileTemplate(outputSettings.OutputFileTemplate),
 		)
 	} else {
-		of, err = outputSettings.CreateTableOutputFormatter()
+		of, err = outputSettings.CreateTableOutputFormatter(cmd)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Error creating output formatter")
 		}
@@ -561,6 +561,7 @@ func SetupProcessorOutput(
 	gp *middlewares.TableProcessor,
 	glazedLayer *layers.ParsedLayer,
 	w io.Writer,
+	cmd *cmds.CommandDescription,
 ) (formatters.OutputFormatter, error) {
 	// first, try to get a row updater
 	rowOf, err := SetupRowOutputFormatter(glazedLayer)
@@ -577,7 +578,7 @@ func SetupProcessorOutput(
 			return nil, err
 		}
 
-		of, err := SetupTableOutputFormatter(glazedLayer)
+		of, err := SetupTableOutputFormatter(glazedLayer, cmd)
 		if err != nil {
 			return nil, err
 		}

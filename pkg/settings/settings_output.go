@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"fmt"
 	"github.com/Masterminds/sprig"
+	"github.com/go-go-golems/glazed/pkg/cmds"
 	"github.com/go-go-golems/glazed/pkg/cmds/layers"
 	"github.com/go-go-golems/glazed/pkg/formatters"
 	"github.com/go-go-golems/glazed/pkg/formatters/csv"
@@ -207,7 +208,7 @@ func (ofs *OutputFormatterSettings) CreateRowOutputFormatter() (formatters.RowOu
 	return of, nil
 }
 
-func (ofs *OutputFormatterSettings) CreateTableOutputFormatter() (formatters.TableOutputFormatter, error) {
+func (ofs *OutputFormatterSettings) CreateTableOutputFormatter(cmd *cmds.CommandDescription) (formatters.TableOutputFormatter, error) {
 	err := ofs.computeCanonicalFormat()
 	if err != nil {
 		return nil, err
@@ -261,6 +262,46 @@ func (ofs *OutputFormatterSettings) CreateTableOutputFormatter() (formatters.Tab
 			)
 		}
 	} else if ofs.Output == "template" {
+		// Get the template string to use
+		templateStr := ofs.Template
+		
+		// If a command was provided and has templates, check if we should use one of them
+		if cmd != nil && cmd.TemplateConfig != nil && cmd.TemplateConfig.Templates != nil {
+			var templateName string
+			
+			// Try to get template name from TemplateData if it exists
+			if ofs.TemplateData != nil {
+				if tn, ok := ofs.TemplateData["templateName"]; ok {
+					if tnStr, ok := tn.(string); ok {
+						templateName = tnStr
+					}
+				}
+			}
+			
+			// If TemplateName was not set in TemplateData, get it from the TemplateSettings
+			if templateName == "" {
+				// Get the template name from the flags
+				glazedLayer, err := layers.NewParameterLayer("glazed-template", "")
+				if err == nil {
+					if templateSettings, err := NewTemplateSettings(glazedLayer); err == nil {
+						templateName = templateSettings.TemplateName
+					}
+				}
+			}
+			
+			// If template name is still empty but there's a default, use that
+			if templateName == "" && cmd.TemplateConfig.DefaultTemplate != "" {
+				templateName = cmd.TemplateConfig.DefaultTemplate
+			}
+			
+			// If we have a template name, try to get the template from the command's templates
+			if templateName != "" {
+				if t, ok := cmd.TemplateConfig.Templates[templateName]; ok {
+					templateStr = t
+				}
+			}
+		}
+
 		if ofs.TemplateFormatterSettings == nil {
 			ofs.TemplateFormatterSettings = &TemplateFormatterSettings{
 				TemplateFuncMaps: []template.FuncMap{
@@ -269,8 +310,9 @@ func (ofs *OutputFormatterSettings) CreateTableOutputFormatter() (formatters.Tab
 				},
 			}
 		}
+		
 		of = templateformatter.NewOutputFormatter(
-			ofs.Template,
+			templateStr,
 			templateformatter.WithTemplateFuncMaps(ofs.TemplateFormatterSettings.TemplateFuncMaps),
 			templateformatter.WithAdditionalData(ofs.TemplateData),
 			templateformatter.WithOutputFile(ofs.OutputFile),

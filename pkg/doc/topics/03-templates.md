@@ -178,6 +178,30 @@ Author: Edgar Allan Poe
 - a: 100
 ```
 
+## Using command-provided templates
+
+Some Glazed commands can provide their own set of named templates. These templates are defined
+by the command author and can be selected using the `--glazed-template-name` flag. This allows
+commands to offer multiple output formats without requiring users to specify template content manually.
+
+```
+❯ glaze examples template-demo --glazed-template-name markdown
+
+# Template Demo Results
+
+| Name | Value |
+|------|-------|
+| Item 1 | 100 |
+| Item 2 | 200 |
+| Item 3 | 300 |
+```
+
+If a template name is specified but not found in the command's templates, the command's default template
+will be used if available. If no template name is specified, the command's default template will be used.
+
+Users can still override command-provided templates with their own by using the `--template` or
+`--template-file` flags, which will take precedence over command-provided templates.
+
 ## Templating functions
 
 Glazed uses the [sprig](http://masterminds.github.io/sprig/) templating 

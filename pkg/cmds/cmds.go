@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"strings"
+	"text/template"
 
 	"github.com/go-go-golems/glazed/pkg/cmds/layers"
 	"github.com/go-go-golems/glazed/pkg/cmds/layout"
@@ -26,6 +27,8 @@ type CommandDescription struct {
 	Type           string                  `yaml:"type,omitempty"`
 	Tags           []string                `yaml:"tags,omitempty"`
 	Metadata       map[string]interface{}  `yaml:"metadata,omitempty"`
+	// TemplateConfig contains templates that can be used by the command
+	TemplateConfig *TemplateConfig `yaml:"templateConfig,omitempty"`
 
 	Parents []string `yaml:",omitempty"`
 	// Source indicates where the command was loaded from, to make debugging easier.
@@ -180,6 +183,12 @@ func WithPrependSource(s string) CommandDescriptionOption {
 	}
 }
 
+func WithTemplateConfig(templateConfig *TemplateConfig) CommandDescriptionOption {
+	return func(c *CommandDescription) {
+		c.TemplateConfig = templateConfig
+	}
+}
+
 func NewCommandDescription(name string, options ...CommandDescriptionOption) *CommandDescription {
 	ret := &CommandDescription{
 		Name:   name,
@@ -260,13 +269,28 @@ func (cd *CommandDescription) Clone(cloneLayers bool, options ...CommandDescript
 	parents := make([]string, len(cd.Parents))
 	copy(parents, cd.Parents)
 
+	// clone template config if it exists
+	var templateConfig *TemplateConfig
+	if cd.TemplateConfig != nil {
+		templateConfig = &TemplateConfig{
+			DefaultTemplate: cd.TemplateConfig.DefaultTemplate,
+		}
+		if cd.TemplateConfig.Templates != nil {
+			templateConfig.Templates = make(map[string]string)
+			for k, v := range cd.TemplateConfig.Templates {
+				templateConfig.Templates[k] = v
+			}
+		}
+	}
+
 	ret := &CommandDescription{
-		Name:    cd.Name,
-		Short:   cd.Short,
-		Long:    cd.Long,
-		Layers:  layers_,
-		Parents: parents,
-		Source:  cd.Source,
+		Name:           cd.Name,
+		Short:          cd.Short,
+		Long:           cd.Long,
+		Layers:         layers_,
+		Parents:        parents,
+		Source:         cd.Source,
+		TemplateConfig: templateConfig,
 	}
 
 	for _, o := range options {
@@ -333,6 +357,14 @@ type GlazeCommand interface {
 	// https://github.com/go-go-golems/glazed/issues/216
 	// See https://github.com/go-go-golems/glazed/issues/173
 	RunIntoGlazeProcessor(ctx context.Context, parsedLayers *layers.ParsedLayers, gp middlewares.Processor) error
+}
+
+// TemplateConfig contains templates that can be used by a command
+type TemplateConfig struct {
+	// Templates is a map of template names to template contents
+	Templates map[string]string `yaml:"templates,omitempty"`
+	// DefaultTemplate is the name of the default template to use
+	DefaultTemplate string `yaml:"defaultTemplate,omitempty"`
 }
 
 type ExitWithoutGlazeError struct{}

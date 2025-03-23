@@ -14,6 +14,7 @@ type TemplateSettings struct {
 	RenameSeparator string
 	UseRowTemplates bool `glazed.parameter:"use-row-templates"`
 	Templates       map[types.FieldName]string
+	TemplateName    string `glazed.parameter:"template-name"`
 }
 
 //go:embed "flags/template.yaml"
@@ -35,6 +36,7 @@ type TemplateFlagsDefaults struct {
 	Template        string            `glazed.parameter:"template"`
 	TemplateField   map[string]string `glazed.parameter:"template-field"`
 	UseRowTemplates bool              `glazed.parameter:"use-row-templates"`
+	TemplateName    string            `glazed.parameter:"template-name"`
 }
 
 func NewTemplateFlagsDefaults() *TemplateFlagsDefaults {
@@ -95,9 +97,15 @@ func NewTemplateSettings(layer *layers.ParsedLayer) (*TemplateSettings, error) {
 		useRowTemplates = false
 	}
 
+	templateName, ok := layer.Parameters.GetValue("template-name").(string)
+	if !ok {
+		templateName = ""
+	}
+
 	return &TemplateSettings{
 		Templates:       templates,
 		UseRowTemplates: useRowTemplates,
 		RenameSeparator: "_",
+		TemplateName:    templateName,
 	}, nil
 }

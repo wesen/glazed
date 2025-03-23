@@ -17,4 +17,9 @@ flags:
     type: bool
     help: Use row templates instead of column templates
     default: false
+    
+  - name: template-name
+    type: string
+    help: Name of the template to use from command-provided templates
+    default: ""
 

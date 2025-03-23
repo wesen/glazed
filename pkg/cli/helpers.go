@@ -45,7 +45,7 @@ func CreateGlazedProcessorFromCobra(cmd *cobra.Command) (*middlewares.TableProce
 	gp, err := settings.SetupTableProcessor(parsedLayer)
 	cobra.CheckErr(err)
 
-	of, err := settings.SetupProcessorOutput(gp, parsedLayer, os.Stdout)
+	of, err := settings.SetupProcessorOutput(gp, parsedLayer, os.Stdout, nil)
 	cobra.CheckErr(err)
 
 	return gp, of, nil

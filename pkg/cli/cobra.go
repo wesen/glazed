@@ -330,7 +330,7 @@ func BuildCobraCommandFromGlazeCommand(cmd_ cmds.GlazeCommand, options ...CobraP
 		gp, err := settings.SetupTableProcessor(glazedLayer)
 		cobra.CheckErr(err)
 
-		_, err = settings.SetupProcessorOutput(gp, glazedLayer, os.Stdout)
+		_, err = settings.SetupProcessorOutput(gp, glazedLayer, os.Stdout, cmd_.Description())
 		cobra.CheckErr(err)
 
 		err = cmd_.RunIntoGlazeProcessor(ctx, parsedLayers, gp)

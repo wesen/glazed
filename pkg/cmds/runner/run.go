@@ -72,7 +72,7 @@ func RunCommand(
 			if err != nil {
 				return fmt.Errorf("failed to setup processor: %w", err)
 			}
-			_, err = settings.SetupProcessorOutput(gp, glazedLayer, opts.Writer)
+			_, err = settings.SetupProcessorOutput(gp, glazedLayer, opts.Writer, cmd.Description())
 			if err != nil {
 				return fmt.Errorf("failed to setup processor output: %w", err)
 			}

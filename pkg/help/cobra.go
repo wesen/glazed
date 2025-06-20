@@ -351,7 +351,10 @@ func NewCobraHelpCommand(hs *HelpSystem) *cobra.Command {
 	// - toc -- done with --list
 	// - topics
 	// - search
-	// - serve
+	// - serve -- DONE
+
+	// Add the serve command for web UI
+	hs.AddServeCommand(ret)
 
 	return ret
 }

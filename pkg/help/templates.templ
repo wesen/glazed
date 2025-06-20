@@ -1,0 +1,368 @@
+package help
+
+import (
+	"fmt"
+	"strings"
+)
+
+// Layout provides the base HTML structure
+templ Layout(title string, content templ.Component) {
+	<!DOCTYPE html>
+	<html lang="en">
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<title>{title} - Help System</title>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+		<link href="/static/style.css" rel="stylesheet"/>
+	</head>
+	<body>
+		<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+			<div class="container-fluid">
+				<a class="navbar-brand" href="/">
+					<strong>Help System</strong>
+				</a>
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarNav">
+					<ul class="navbar-nav me-auto">
+						<li class="nav-item">
+							<a class="nav-link" href="/">Home</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="/search">Search</a>
+						</li>
+					</ul>
+					<form class="d-flex" action="/search" method="GET">
+						<input class="form-control me-2" type="search" name="q" placeholder="Search help..." aria-label="Search"/>
+						<button class="btn btn-outline-light" type="submit">Search</button>
+					</form>
+				</div>
+			</div>
+		</nav>
+		<div class="container-fluid">
+			<div class="row">
+				@content
+			</div>
+		</div>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+		<script src="/static/app.js"></script>
+	</body>
+	</html>
+}
+
+// IndexPage displays the main help page
+templ IndexPage(data map[string]interface{}) {
+	@Layout(data["Title"].(string), IndexContent(data))
+}
+
+templ IndexContent(data map[string]interface{}) {
+	<div class="col-md-3 sidebar p-3">
+		<h5>Browse by Type</h5>
+		<div class="list-group">
+			<button type="button" class="list-group-item list-group-item-action filter-btn active" data-filter="all">
+				All Sections
+			</button>
+			<button type="button" class="list-group-item list-group-item-action filter-btn" data-filter="GeneralTopic">
+				<span class="badge badge-topic me-2">Topic</span> General Topics
+			</button>
+			<button type="button" class="list-group-item list-group-item-action filter-btn" data-filter="Example">
+				<span class="badge badge-example me-2">Example</span> Examples
+			</button>
+			<button type="button" class="list-group-item list-group-item-action filter-btn" data-filter="Application">
+				<span class="badge badge-application me-2">App</span> Applications
+			</button>
+			<button type="button" class="list-group-item list-group-item-action filter-btn" data-filter="Tutorial">
+				<span class="badge badge-tutorial me-2">Tutorial</span> Tutorials
+			</button>
+		</div>
+	</div>
+	<div class="col-md-9 content-area p-4">
+		<div class="mb-4">
+			<h1>Help System</h1>
+			<p class="lead">Browse documentation, examples, and tutorials for this application.</p>
+		</div>
+		
+		if helpPage, ok := data["HelpPage"].(*HelpPage); ok {
+			@SectionGroup("Default Topics", helpPage.DefaultGeneralTopics)
+			@SectionGroup("Examples", helpPage.DefaultExamples)
+			@SectionGroup("Applications", helpPage.DefaultApplications)
+			@SectionGroup("Tutorials", helpPage.DefaultTutorials)
+			
+			if len(helpPage.OtherGeneralTopics) > 0 {
+				@SectionGroup("Other Topics", helpPage.OtherGeneralTopics)
+			}
+			if len(helpPage.OtherExamples) > 0 {
+				@SectionGroup("Other Examples", helpPage.OtherExamples)
+			}
+			if len(helpPage.OtherApplications) > 0 {
+				@SectionGroup("Other Applications", helpPage.OtherApplications)
+			}
+			if len(helpPage.OtherTutorials) > 0 {
+				@SectionGroup("Other Tutorials", helpPage.OtherTutorials)
+			}
+		}
+	</div>
+}
+
+// SectionGroup displays a group of sections
+templ SectionGroup(title string, sections []*Section) {
+	if len(sections) > 0 {
+		<div class="mb-4">
+			<h3>{title}</h3>
+			<div class="row">
+				for _, section := range sections {
+					<div class="col-md-6 col-lg-4 mb-3">
+						@SectionCard(section)
+					</div>
+				}
+			</div>
+		</div>
+	}
+}
+
+// SectionCard displays a single section as a card
+templ SectionCard(section *Section) {
+	<div class="card section-card h-100" data-section-type={section.SectionType.String()}>
+		<div class="card-body">
+			<div class="d-flex justify-content-between align-items-start mb-2">
+				<h5 class="card-title">
+					<a href={templ.URL("/section/" + section.Slug)} class="text-decoration-none">
+						{section.Title}
+					</a>
+				</h5>
+				@SectionTypeBadge(section.SectionType)
+			</div>
+			if section.Short != "" {
+				<p class="card-text text-muted">{section.Short}</p>
+			}
+			if len(section.Topics) > 0 || len(section.Commands) > 0 {
+				<div class="section-tags mt-2">
+					for _, topic := range section.Topics {
+						<span class="badge bg-light text-dark">{topic}</span>
+					}
+					for _, command := range section.Commands {
+						<span class="badge bg-primary">{command}</span>
+					}
+				</div>
+			}
+		</div>
+	</div>
+}
+
+// SectionTypeBadge displays a badge for the section type
+templ SectionTypeBadge(sectionType SectionType) {
+	switch sectionType {
+	case SectionGeneralTopic:
+		<span class="badge badge-topic section-type-badge">Topic</span>
+	case SectionExample:
+		<span class="badge badge-example section-type-badge">Example</span>
+	case SectionApplication:
+		<span class="badge badge-application section-type-badge">App</span>
+	case SectionTutorial:
+		<span class="badge badge-tutorial section-type-badge">Tutorial</span>
+	default:
+		<span class="badge bg-secondary section-type-badge">Unknown</span>
+	}
+}
+
+// SectionPage displays a single section
+templ SectionPage(data map[string]interface{}) {
+	@Layout(data["Title"].(string), SectionContent(data))
+}
+
+templ SectionContent(data map[string]interface{}) {
+	<div class="col-md-2 sidebar p-3">
+		<div class="quick-nav">
+			<h6>Navigation</h6>
+			<ul class="nav nav-pills flex-column">
+				<li class="nav-item">
+					<a class="nav-link" href="/">← Back to Home</a>
+				</li>
+			</ul>
+		</div>
+	</div>
+	<div class="col-md-10 content-area p-4">
+		if section, ok := data["Section"].(*Section); ok {
+			<nav aria-label="breadcrumb" class="nav-breadcrumb">
+				<ol class="breadcrumb">
+					<li class="breadcrumb-item">
+						<a href="/">Home</a>
+					</li>
+					<li class="breadcrumb-item active" aria-current="page">{section.Title}</li>
+				</ol>
+			</nav>
+			
+			<div class="d-flex justify-content-between align-items-start mb-3">
+				<h1>{section.Title}</h1>
+				@SectionTypeBadge(section.SectionType)
+			</div>
+			
+			if section.SubTitle != "" {
+				<h2 class="text-muted mb-3">{section.SubTitle}</h2>
+			}
+			
+			<div class="section-meta">
+				if len(section.Topics) > 0 {
+					<div class="mb-2">
+						<strong>Topics:</strong>
+						for i, topic := range section.Topics {
+							if i > 0 {
+								<span>, </span>
+							}
+							<span class="badge bg-light text-dark">{topic}</span>
+						}
+					</div>
+				}
+				if len(section.Commands) > 0 {
+					<div class="mb-2">
+						<strong>Commands:</strong>
+						for i, command := range section.Commands {
+							if i > 0 {
+								<span>, </span>
+							}
+							<code>{command}</code>
+						}
+					</div>
+				}
+				if len(section.Flags) > 0 {
+					<div class="mb-2">
+						<strong>Flags:</strong>
+						for i, flag := range section.Flags {
+							if i > 0 {
+								<span>, </span>
+							}
+							<code>--{flag}</code>
+						}
+					</div>
+				}
+			</div>
+			
+			<div class="help-content">
+				@templ.Raw(renderMarkdown(section.Content))
+			</div>
+		}
+	</div>
+}
+
+// SearchPage displays search results
+templ SearchPage(data map[string]interface{}) {
+	@Layout(data["Title"].(string), SearchContent(data))
+}
+
+templ SearchContent(data map[string]interface{}) {
+	<div class="col-12 p-4">
+		<h1>Search Help</h1>
+		
+		<form id="searchForm" action="/search" method="GET" class="search-form">
+			<div class="row">
+				<div class="col-md-8">
+					<input 
+						type="text" 
+						id="searchInput"
+						name="q" 
+						class="form-control" 
+						placeholder="Search for topics, examples, or tutorials..." 
+						value={data["Query"].(string)}
+					/>
+				</div>
+				<div class="col-md-3">
+					<select id="searchType" name="type" class="form-select">
+						<option value="">All Types</option>
+						<option value="topics" if data["Type"].(string) == "topics" { selected }>Topics</option>
+						<option value="examples" if data["Type"].(string) == "examples" { selected }>Examples</option>
+						<option value="applications" if data["Type"].(string) == "applications" { selected }>Applications</option>
+						<option value="tutorials" if data["Type"].(string) == "tutorials" { selected }>Tutorials</option>
+					</select>
+				</div>
+				<div class="col-md-1">
+					<button type="submit" class="btn btn-primary w-100">Search</button>
+				</div>
+			</div>
+		</form>
+		
+		if results, ok := data["Results"].([]*Section); ok {
+			if data["Query"].(string) != "" {
+				<h3>Search Results</h3>
+				<p class="text-muted">Found {fmt.Sprintf("%d", len(results))} results for "{data["Query"].(string)}"</p>
+				
+				if len(results) > 0 {
+					<div class="row">
+						for _, section := range results {
+							<div class="col-md-6 col-lg-4 mb-3">
+								@SectionCard(section)
+							</div>
+						}
+					</div>
+				} else {
+					<div class="alert alert-info">
+						<h4>No results found</h4>
+						<p>Try adjusting your search terms or browse the <a href="/">main help page</a>.</p>
+					</div>
+				}
+			} else {
+				<p class="text-muted">Enter a search term to find help topics, examples, and tutorials.</p>
+			}
+		}
+	</div>
+}
+
+// Helper function to render markdown (simplified)
+func renderMarkdown(content string) string {
+	// This is a simple markdown renderer - in a real implementation,
+	// you might want to use a proper markdown library like blackfriday
+	
+	// Convert code blocks
+	content = strings.ReplaceAll(content, "```", "<pre><code>")
+	
+	// Convert inline code
+	lines := strings.Split(content, "\n")
+	for i, line := range lines {
+		// Headers
+		if strings.HasPrefix(line, "#### ") {
+			lines[i] = "<h4>" + strings.TrimPrefix(line, "#### ") + "</h4>"
+		} else if strings.HasPrefix(line, "### ") {
+			lines[i] = "<h3>" + strings.TrimPrefix(line, "### ") + "</h3>"
+		} else if strings.HasPrefix(line, "## ") {
+			lines[i] = "<h2>" + strings.TrimPrefix(line, "## ") + "</h2>"
+		} else if strings.HasPrefix(line, "# ") {
+			lines[i] = "<h1>" + strings.TrimPrefix(line, "# ") + "</h1>"
+		}
+		
+		// Bold
+		if strings.Contains(line, "**") {
+			parts := strings.Split(line, "**")
+			if len(parts) >= 3 {
+				for j := 1; j < len(parts); j += 2 {
+					parts[j] = "<strong>" + parts[j] + "</strong>"
+				}
+				lines[i] = strings.Join(parts, "")
+			}
+		}
+		
+		// Inline code
+		if strings.Contains(line, "`") && !strings.Contains(line, "<code>") {
+			parts := strings.Split(line, "`")
+			if len(parts) >= 3 {
+				for j := 1; j < len(parts); j += 2 {
+					parts[j] = "<code>" + parts[j] + "</code>"
+				}
+				lines[i] = strings.Join(parts, "")
+			}
+		}
+	}
+	
+	content = strings.Join(lines, "\n")
+	
+	// Convert newlines to paragraphs (simplified)
+	paragraphs := strings.Split(content, "\n\n")
+	for i, para := range paragraphs {
+		para = strings.TrimSpace(para)
+		if para != "" && !strings.HasPrefix(para, "<") {
+			paragraphs[i] = "<p>" + strings.ReplaceAll(para, "\n", "<br>") + "</p>"
+		}
+	}
+	
+	return strings.Join(paragraphs, "\n")
+}

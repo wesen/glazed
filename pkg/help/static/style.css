@@ -1,0 +1,125 @@
+/* Custom styles for help system */
+
+.sidebar {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    border-right: 1px solid #dee2e6;
+}
+
+.content-area {
+    background-color: white;
+    min-height: 100vh;
+}
+
+.section-card {
+    transition: transform 0.2s ease-in-out;
+    border: 1px solid #dee2e6;
+}
+
+.section-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.section-type-badge {
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.badge-topic {
+    background-color: #007bff;
+}
+
+.badge-example {
+    background-color: #28a745;
+}
+
+.badge-application {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.badge-tutorial {
+    background-color: #dc3545;
+}
+
+.search-form {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+}
+
+.help-content {
+    line-height: 1.6;
+}
+
+.help-content h1,
+.help-content h2,
+.help-content h3,
+.help-content h4,
+.help-content h5,
+.help-content h6 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+.help-content h1:first-child,
+.help-content h2:first-child,
+.help-content h3:first-child {
+    margin-top: 0;
+}
+
+.help-content pre {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 1rem;
+    overflow-x: auto;
+}
+
+.help-content code {
+    background-color: #f8f9fa;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+.help-content pre code {
+    background-color: transparent;
+    padding: 0;
+}
+
+.nav-breadcrumb {
+    background-color: transparent;
+    padding: 0;
+    margin-bottom: 1rem;
+}
+
+.section-meta {
+    font-size: 0.9em;
+    color: #6c757d;
+    margin-bottom: 1rem;
+}
+
+.section-tags .badge {
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.quick-nav {
+    position: sticky;
+    top: 2rem;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        border-right: none;
+        border-bottom: 1px solid #dee2e6;
+        min-height: auto;
+    }
+    
+    .quick-nav {
+        position: static;
+    }
+}

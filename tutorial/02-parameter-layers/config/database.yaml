@@ -1,0 +1,6 @@
+database:
+  host: prod-database.example.com
+  port: 5433
+  database: production_fileprocessor
+  username: prod_user
+  password: secure_password_123

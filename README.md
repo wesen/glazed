@@ -1,440 +1,451 @@
-# glazed - Output structured data in a variety of formats
+# glazed - Framework for Rich Command-Line Tools with Structured Data Output
 
 ![](https://img.shields.io/github/license/go-go-golems/glazed)
 ![](https://img.shields.io/github/actions/workflow/status/go-go-golems/glazed/push.yml?branch=main)
 
-> Add the icing to your structured data!
+> Build beautiful command-line tools with structured data output, rich help systems, and flexible parameter parsing.
 
-Glazed is a library that makes it easy to output structured data.
-When programming, we have a rich understanding of the data we are working with,
-yet when we output it to the user, we are forced to use a flat, unstructured format.
+**glazed** is a comprehensive Go framework for building command-line applications that need to handle structured data with rich output formatting, flexible parameter management, and powerful help systems.
 
-It tries to implement some of the ideas listed in
-[14 great tips to make amazing command line applications](https://dev.to/wesen/14-great-tips-to-make-amazing-cli-applications-3gp3).
+## 🚀 What is glazed?
 
-It is in early alpha, and will change. Contributions are welcome,
-but this project is going to be an experimental playground for a while,
-while I try to figure out what is possible and worth tackling.
+glazed transforms the way you build CLI tools by providing:
 
-![Command line recording of the functionality described in "Features"](https://imgur.com/ZEtdLes.gif)
+- **Three Command Types**: Choose between `BareCommand`, `WriterCommand`, and `GlazeCommand` based on your output needs
+- **Structured Data Pipeline**: Built-in support for outputting data as JSON, YAML, CSV, tables, and more
+- **Layered Parameter System**: Organize parameters into logical groups with powerful parsing and validation
+- **Rich Help System**: Create comprehensive documentation with topics, examples, applications, and tutorials
+- **Middleware Architecture**: Process parameters from multiple sources (flags, env vars, config files)
+- **Easy Integration**: Works seamlessly with Cobra and can be used programmatically
 
-## Features
-
-With glazed, you can output object and table data in a rich variety of ways:
-
-- as human-readable tables
-
-```
-+ glaze json misc/test-data/1.json misc/test-data/2.json misc/test-data/3.json
-+-----+-----+------------+-----+-----+
-| a   | b   | c          | d.e | d.f |
-+-----+-----+------------+-----+-----+
-| 1   | 2   | [3 4 5]    | 6   | 7   |
-| 10  | 20  | [30 40 50] | 60  | 70  |
-| 100 | 200 | [300]      |     |     |
-+-----+-----+------------+-----+-----+
-```
-
-- as CSV/TSV
-
-```
-+ glaze json misc/test-data/1.json misc/test-data/2.json misc/test-data/3.json --output csv
-a,b,c,d.e,d.f
-1,2,[3 4 5],6,7
-10,20,[30 40 50],60,70
-100,200,[300],,
-```
-
-- as markdown
-
-```
-+ glaze json misc/test-data/1.json misc/test-data/2.json misc/test-data/3.json --table-format markdown
-+ glow -
-
-
-   A  │  B  │     C      │ D E │ D F
-──────┼─────┼────────────┼─────┼──────
-    1 │   2 │ [3 4 5]    │   6 │   7
-   10 │  20 │ [30 40 50] │  60 │  70
-  100 │ 200 │ [300]      │     │
-```
-
-- as JSON
-
-```
-+ glaze json misc/test-data/2.json --output json
-[
-  {
-    "a": 10,
-    "b": 20,
-    "c": [
-      30,
-      40,
-      50
-    ],
-    "d": {
-      "e": 60,
-      "f": 70
-    }
-  }
-]
-```
-
-You can flatten fields (happens by default when outputting to a table)
-
-```
-+ glaze json misc/test-data/2.json --output json --flatten
-[
-  {
-    "a": 10,
-    "b": 20,
-    "c": [
-      30,
-      40,
-      50
-    ],
-    "d.e": 60,
-    "d.f": 70
-  }
-```
-
-- as YAML
-``` 
-+ glaze json --output yaml ./misc/test-data/1.json
-- a: 1
-  b: 2
-  c:
-    - 3
-    - 4
-    - 5
-  d:
-    e: 6
-    f: 7
-
-```
-
-You can select and reorder fields:
-
-```
-+ glaze json misc/test-data/1.json misc/test-data/2.json misc/test-data/3.json --fields c,b,a --table-format markdown
-+ glow -
-
-      C      │  B  │  A
-─────────────┼─────┼──────
-  [3 4 5]    │   2 │   1
-  [30 40 50] │  20 │  10
-  [300]      │ 200 │ 100
-```
-
-You can filter out fields:
-
-```
-+ glaze json misc/test-data/1.json misc/test-data/2.json misc/test-data/3.json --filter d.e
-+-----+-----+------------+-----+
-| a   | b   | c          | d.f |
-+-----+-----+------------+-----+
-| 1   | 2   | [3 4 5]    | 7   |
-| 10  | 20  | [30 40 50] | 70  |
-| 100 | 200 | [300]      |     |
-+-----+-----+------------+-----+
-```
-
-You can rename columns, using both simple string replacement or
-more advanced regexp matching:
-
-```
-+ glaze yaml misc/test-data/test.yaml --input-is-array --rename baz:blop,d.e:dang
-+-----+------+-----+------+-----+---------+
-| bar | blop | d.f | dang | foo | foobar  |
-+-----+------+-----+------+-----+---------+
-| 7   | 2    | 7   | 6    | 1   | [3 4 5] |
-| 70  | 20   | 70  | 60   | 10  |         |
-|     | 200  |     |      |     | [300]   |
-+-----+------+-----+------+-----+---------+
-```
-
-```
-+ glaze yaml misc/test-data/test.yaml --input-is-array \
-  --rename-regexp '^(.*)bar:${1}blop','b..:blip'
-+------+------+-----+-----+-----+---------+
-| blip | blop | d.e | d.f | foo | fooblop |
-+------+------+-----+-----+-----+---------+
-| 2    | 7    | 6   | 7   | 1   | [3 4 5] |
-| 20   | 70   | 60  | 70  | 10  |         |
-| 200  |      |     |     |     | [300]   |
-+------+------+-----+-----+-----+---------+
-```
-
-- use go templates to customize output
-
-You can use go templates to either create a new field (called _0 per default). 
-Per default, the templates are applied at the input level, when rows
-are actually still full blown objects (if reading in from JSON for example).
-
-```
-❯ glaze json misc/test-data/[123].json --template '{{.a}}-{{.b}}: {{.d.f}}'
-
-+---------------------+
-| _0                  |
-+---------------------+
-| 1-2: 7              |
-| 10-20: 70           |
-| 100-200: <no value> |
-+---------------------+
-```
-
-You can also apply templates at the row level, once the input has been flattened.
-In this case, because flattened columns contain the symbol `.`, fields get renamed 
-to use the symbol `_` as a separator.
-
-``` 
-❯ glaze json misc/test-data/[123].json --template '{{.a}}-{{.b}}: {{.d_f}}' \
-  --use-row-templates --fields a,_0 \
-  --output csv
-a,_0
-1,1-2: 7
-10,10-20: 70
-100,100-200: <no value>
-```
-
-Instead of just adding / replacing everything with a single field `_0`, you
-can also specify multiple templates using the `--template-field` argument, which has 
-the form `COLNAME:TEMPLATE`.
-
-``` 
-❯ glaze json misc/test-data/[123].json \
-    --template-field 'foo:{{.a}}-{{.b}},bar:{{.d_f}}' \
-    --use-row-templates --fields a,foo,bar
-+-----+---------+------------+
-| a   | foo     | bar        |
-+-----+---------+------------+
-| 1   | 1-2     | 7          |
-| 10  | 10-20   | 70         |
-| 100 | 100-200 | <no value> |
-+-----+---------+------------+
-```
-
-To make things a bit more readable, especially when doing a lot of template transformations,
-you can also load field templates from a yaml file using the `@` symbol.
-
-``` 
-❯ glaze json misc/test-data/[123].json \
-    --template-field '@misc/template-field-object.yaml' \
-    --output json
-[
-  {
-    "barbaz": "6 - 7",
-    "foobar": "1"
-  },
-  {
-    "barbaz": "60 - 70",
-    "foobar": "10"
-  },
-  {
-    "barbaz": "\u003cno value\u003e - \u003cno value\u003e",
-    "foobar": "100"
-  }
-]
-```
-
-- output individual objects or rows as separate files
-
-Glazed provides a variety of "middlewares" with which you can:
-
-- flatten nested objects into rows
-- create new fields based on go templates
-- filter and reorder columns
-
-```go
-of := formatters.NewCSVOutputFormatter()
-
-of.AddTableMiddleware(middlewares.NewFlattenObjectMiddleware())
-of.AddTableMiddleware(middlewares.NewFieldsFilterMiddleware(
-	[]string{"a", "b"},
-	[]string{"c"}
-)
-
-for _, obj := range objects {
-	of.AddRow(&types.SimpleRow{Hash: obj})
-}
-
-s, err := of.Output()
-fmt.Println(s)
-```
-
-For easy integration into your own tools, glazed provides:
-
-- a simple API for:
-  - input processors
-  - row and object middlewares
-  - output formatters
-- bindings and helpers for:
-  - go command-line flag parsing
-  - cobra and viper libraries
-  - YAML driven configuration
-
-Glazed also comes with the glaze tool which can be use for simple data manipulation
-and rich terminal output, leveraging the glazed library.
-
-## Getting started
-
-### Using the glaze command line tool
-
-First, [install the glaze tool](#Installation).
-
-- Show 4-5 cool examples
-
-### Developing with glazed
-
-Write a tiny command line tool:
-- if CLI flags can be set up quickly, do that
-- generate a random table
-- output it using glazed
-
-## Examples
-
-### Output formats
-
-- json [x]
-- yaml - #19
-- csv [x]
-- ascii [x]
-- markdown [x]
-- html [x]
-
-### File output
-
-- Single file output - #4
-- Multi file output - #4
-
-### Flattening structures
-
-- json to rows
-
-### Filtering columns
-
-- filters and fields
-
-### Go template support
-
-- single string template
-- multi file templates
-- field templates
-
-### Markdown output and templating
-
-- Multi markdown template output with index page
-- markdown template file
-
-### Configuration file
-
-- some examples
-
-### Schema documentation
-
-- show how to output schema
-
-## Using glaze as a library
-
-### Middlewares
-
-- ObjectMiddleware
-- RowMiddleware
-- TableMiddleware
-
-### Formatters
-
-- TableOutputFormatter
-- CsvOutputFormatter
-
-### Command Line Integration
-
-- cobra integration [x]
-- golang flags - #3
-- add support for configuring command line flags (enable / disable / rename)
-- viper integration
-- calibrate from config files - #17
-
-### Schema documentation
-
-- show how to load different schemas
-
-## The glaze tool
+## 📦 Quick Start
 
 ### Installation
 
-Run the `glaze` CLI by using `go run ./cmd/glaze`.
+```bash
+go get github.com/go-go-golems/glazed
+```
 
-### Import formats
+### Try the glaze CLI Tool
 
-- json / json rows / multiple files - #13
-- yaml / multiple files - #14
-- csv - #15
-- cut / ascii - #16
-- sqlite / SQL - #20
-- binary parser
+The `glaze` command demonstrates glazed's capabilities:
 
-### Output flags
+```bash
+# Run the tool
+go run ./cmd/glaze
 
-## Current RFCs
+# Process JSON data with table output
+echo '{"id": 1, "name": "John", "email": "john@example.com"}' | go run ./cmd/glaze json
 
-I keep a list of the current planned features as RFC documents.
+# Output as CSV
+echo '{"id": 1, "name": "John"}' | go run ./cmd/glaze json --output csv
 
-- [01 - Flag helpers](doc/rfcs/drafts/01_2022-11-13_flag-helpers.md)
-- [02 - Multi-file output](doc/rfcs/drafts/02_2022-11-13_multi-file-output.md)
-- [03 - SQLite output](doc/rfcs/drafts/03_2022-11-13_sqlite-output.md)
-- [04 - Configuration files](doc/rfcs/drafts/04_2022-11-13_configuration-file.md)
-- [05 - Glaze CLI tool](doc/rfcs/done/05_2022-11-19_glaze-cli-tool.md)
+# Get help on any topic
+go run ./cmd/glaze help help-system
+```
 
-## General brainstorm
+## 🏗️ Building Your First Command
 
-- documentation for each subsystem
+Here's a simple example of creating a GlazeCommand that outputs structured data:
 
-## Future ideas
+```go
+package main
 
-### Glaze CLI
+import (
+    "context"
+    "fmt"
+    "os"
 
-#### UX
+    "github.com/go-go-golems/glazed/pkg/cli"
+    "github.com/go-go-golems/glazed/pkg/cmds"
+    "github.com/go-go-golems/glazed/pkg/cmds/layers"
+    "github.com/go-go-golems/glazed/pkg/cmds/parameters"
+    "github.com/go-go-golems/glazed/pkg/middlewares"
+    "github.com/go-go-golems/glazed/pkg/settings"
+    "github.com/go-go-golems/glazed/pkg/types"
+    "github.com/spf13/cobra"
+)
 
-- table app that can hide/show/rename/reorder columns
-- markdown rendering with glow - #21
-- style aliases (like pretty=oneline for git)
-  - maybe styles can also have additional parameters
-- sparklines and other shenanigans
+// UserListCommand demonstrates a GlazeCommand
+type UserListCommand struct {
+    *cmds.CommandDescription
+}
 
-#### File Formats
+// Settings struct for clean parameter access
+type UserListSettings struct {
+    Count int  `glazed.parameter:"count"`
+    Verbose bool `glazed.parameter:"verbose"`
+}
 
-- add support for arbitrary input / output SQL
-- add support for inputting binary data and providing a parser
-- add support for pcap input
-- add support for excel input
-- parquet format (and pandas? numpy?)
-- excel export
-  - annotate excel export with as much metadata as possible
+var _ cmds.GlazeCommand = &UserListCommand{}
 
-#### Transformation
+func (c *UserListCommand) RunIntoGlazeProcessor(
+    ctx context.Context,
+    parsedLayers *layers.ParsedLayers,
+    gp middlewares.Processor,
+) error {
+    // Parse settings from layers
+    s := &UserListSettings{}
+    if err := parsedLayers.InitializeStruct(layers.DefaultSlug, s); err != nil {
+        return err
+    }
+    
+    // Generate sample data
+    users := []struct {
+        ID   int    `json:"id"`
+        Name string `json:"name"`
+        Role string `json:"role"`
+    }{
+        {1, "Alice", "admin"},
+        {2, "Bob", "user"},
+        {3, "Carol", "editor"},
+    }
+    
+    // Limit results if specified
+    if s.Count > 0 && s.Count < len(users) {
+        users = users[:s.Count]
+    }
+    
+    // Output as structured rows
+    for _, user := range users {
+        row := types.NewRowFromStruct(&user, true)
+        if err := gp.AddRow(ctx, row); err != nil {
+            return err
+        }
+    }
+    
+    return nil
+}
 
-- add jq support
-- search engine  / autocompletion based on known schema
-  - use query language to create hyperlinks in output
+func NewUserListCommand() (*UserListCommand, error) {
+    // Create standard glazed output layer
+    glazedLayer, err := settings.NewGlazedParameterLayers()
+    if err != nil {
+        return nil, err
+    }
+    
+    // Define command with parameters
+    cmdDesc := cmds.NewCommandDescription(
+        "list-users",
+        cmds.WithShort("List users with optional filtering"),
+        cmds.WithFlags(
+            parameters.NewParameterDefinition(
+                "count",
+                parameters.ParameterTypeInteger,
+                parameters.WithHelp("Maximum number of users to return"),
+                parameters.WithDefault(0),
+            ),
+            parameters.NewParameterDefinition(
+                "verbose",
+                parameters.ParameterTypeBool,
+                parameters.WithHelp("Enable verbose output"),
+                parameters.WithDefault(false),
+            ),
+        ),
+        cmds.WithLayersList(glazedLayer),
+    )
+    
+    return &UserListCommand{CommandDescription: cmdDesc}, nil
+}
 
-#### Misc glaze features
+func main() {
+    // Create root command
+    rootCmd := &cobra.Command{
+        Use:   "myapp",
+        Short: "Example glazed application",
+    }
+    
+    // Create and add your command
+    userCmd, err := NewUserListCommand()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+        os.Exit(1)
+    }
+    
+    cobraCmd, err := cli.BuildCobraCommandFromCommand(userCmd)
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+        os.Exit(1)
+    }
+    
+    rootCmd.AddCommand(cobraCmd)
+    
+    // Execute
+    if err := rootCmd.Execute(); err != nil {
+        os.Exit(1)
+    }
+}
+```
 
-- add support for pushing to cloud resources
-  - dynamodb
-  - S3
-  - SQL connectors (see arbitrary input / output SQL)
-- add support for serving over HTTP
-  - API server to render local data
-  - HTML frontend
-- serve a local SQL database? meh...
-  - useful if you want the user to modify the DB? why not just output sqlite
-- cloud / network API output forms, for example to store something in s3 or other databases
-  - SQL
-  - dynamodb
-  - s3
-- do we want some kind of transformation DSL / configuration DSL to do
-  more complicated things? Definitely not at first, before having the use case for it.
-- hyperlinked schema definitions
-- collect metadata and event logs to what led to the creation of the data itself
+Run your command:
 
+```bash
+# Table output (default)
+./myapp list-users
+
+# JSON output
+./myapp list-users --output json
+
+# Limit results
+./myapp list-users --count 2 --output yaml
+```
+
+## 🎯 Core Concepts
+
+### Command Types
+
+glazed provides three command interfaces for different use cases:
+
+1. **`BareCommand`**: Handle your own output directly
+2. **`WriterCommand`**: Write to a provided `io.Writer`
+3. **`GlazeCommand`**: Output structured data with automatic formatting
+
+### Parameter Layers
+
+Organize parameters into logical groups:
+
+- **Default Layer**: Your command-specific parameters
+- **Glazed Layer**: Standard output formatting options (`--output`, `--fields`, etc.)
+- **Custom Layers**: Group related configuration (database, API, etc.)
+
+```go
+// Create a custom layer
+dbLayer, err := layers.NewParameterLayer(
+    "database",
+    "Database Configuration",
+)
+dbLayer.AddFlags(
+    parameters.NewParameterDefinition("host", parameters.ParameterTypeString),
+    parameters.NewParameterDefinition("port", parameters.ParameterTypeInteger),
+)
+```
+
+### Parameter Types
+
+Rich type system with validation:
+
+- **Basic**: `String`, `Integer`, `Bool`, `Float`, `Date`
+- **Secret**: `Secret` (masks sensitive values)
+- **Lists**: `StringList`, `IntegerList`, `FloatList`
+- **Choices**: `Choice`, `ChoiceList` (predefined options)
+- **Files**: `File`, `FileList`, `StringFromFile`
+- **Key-Value**: `KeyValue` (map-like inputs)
+
+### Middleware System
+
+Process parameters from multiple sources:
+
+```go
+// Chain middleware for parameter processing
+err := middlewares.ExecuteMiddlewares(layers, parsedLayers,
+    middlewares.SetFromDefaults(),
+    middlewares.UpdateFromEnv("MYAPP"),
+    middlewares.LoadParametersFromFile("config.yaml"),
+    middlewares.ParseFromCobraCommand(cmd),
+)
+```
+
+## 🎨 Output Formats
+
+GlazeCommands automatically support multiple output formats:
+
+```bash
+# Table (default)
+myapp command
+
+# JSON
+myapp command --output json
+
+# YAML  
+myapp command --output yaml
+
+# CSV
+myapp command --output csv
+
+# Select specific fields
+myapp command --fields id,name --output json
+
+# Filter and rename columns
+myapp command --filter-columns age --rename name:username
+```
+
+## 📚 Help System
+
+Create rich documentation with multiple section types:
+
+### General Topics
+Comprehensive articles about concepts and features
+
+### Examples  
+Specific command usage examples
+
+### Applications
+Real-world use cases combining multiple tools
+
+### Tutorials
+Step-by-step guides for complex workflows
+
+```bash
+# Access help system
+myapp help help-system
+
+# List all help topics
+myapp help --list
+
+# Get help on specific topics
+myapp help parameter-layers
+```
+
+## 🔧 Advanced Features
+
+### YAML Command Definitions
+
+Define commands declaratively:
+
+```yaml
+name: process-data
+short: Process data with filtering options
+flags:
+  - name: input-file
+    type: file
+    help: Input data file
+    required: true
+  - name: format
+    type: choice
+    choices: [json, yaml, csv]
+    default: json
+    help: Output format
+arguments:
+  - name: output-dir
+    type: string
+    help: Output directory
+    required: true
+```
+
+### Programmatic Execution
+
+Run commands without CLI:
+
+```go
+// Run programmatically
+ctx := context.Background()
+err := runner.ParseAndRun(ctx, cmd, 
+    []runner.ParseOption{
+        runner.WithEnvMiddleware("MYAPP_"),
+        runner.WithValuesForLayers(map[string]map[string]interface{}{
+            "default": {"verbose": true},
+        }),
+    },
+    []runner.RunOption{
+        runner.WithWriter(os.Stdout),
+    },
+)
+```
+
+### JSON Schema Generation
+
+Generate schemas for validation and documentation:
+
+```go
+schema, err := cmd.Description().ToJsonSchema()
+```
+
+## 🛠️ Real-World Applications
+
+glazed powers several production tools:
+
+- **Data Processing Pipelines**: Transform JSON, YAML, CSV data with rich output
+- **API Clients**: Build CLI tools that consume APIs and format responses
+- **System Administration**: Create tools that gather system info with structured output
+- **Configuration Management**: Build tools that validate and transform config files
+
+## 📋 Migration Guide
+
+If you're using the old glazed interface focused on simple data formatting:
+
+### Old Approach (still supported)
+```go
+// Direct formatter usage
+formatter := formatters.NewTableFormatter()
+formatter.AddRow(types.NewRow(types.MRP("name", "value")))
+output, _ := formatter.Output()
+```
+
+### New Approach (recommended)
+```go
+// Command-based approach with rich features
+type MyCommand struct {
+    *cmds.CommandDescription
+}
+
+func (c *MyCommand) RunIntoGlazeProcessor(ctx context.Context, 
+    parsedLayers *layers.ParsedLayers, gp middlewares.Processor) error {
+    return gp.AddRow(ctx, types.NewRow(types.MRP("name", "value")))
+}
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please check our [contribution guidelines](CONTRIBUTING.md).
+
+## 📄 License
+
+Licensed under the MIT License. See [LICENSE](LICENSE) for details.
+
+## 📚 Learning Resources
+
+### Comprehensive Tutorial Series
+
+Learn glazed step-by-step with our comprehensive tutorial series:
+
+1. **[Getting Started with Glazed Commands](pkg/doc/tutorials/01-getting-started-with-commands.md)**
+   - Learn the three command types (BareCommand, WriterCommand, GlazeCommand)
+   - Create your first commands with parameters
+   - Understand structured data output
+   - [Practice Exercise: File Info Tool](tutorial/01-getting-started/exercises/file-info/)
+
+2. **[Parameter Management and Layers](pkg/doc/tutorials/02-parameter-management-and-layers.md)**
+   - Master parameter organization with layers
+   - Configuration loading from multiple sources
+   - Middleware for flexible parameter processing
+   - [Practice Exercise: Backup Tool](tutorial/02-parameter-layers/exercises/backup-tool/)
+
+3. **[Advanced Output and Data Processing](pkg/doc/tutorials/03-advanced-output-and-data-processing.md)**
+   - Handle complex nested data structures
+   - Create custom templates and formatters
+   - Build sophisticated data processing pipelines
+   - [Practice Exercise: Log Analyzer](tutorial/03-advanced-output/exercises/log-analyzer/)
+
+4. **[Building Production CLI Tools](pkg/doc/tutorials/04-building-production-cli-tools.md)**
+   - Implement robust error handling and logging
+   - Add monitoring and health checks
+   - Create comprehensive test strategies
+   - [Practice Exercise: File Synchronizer](tutorial/04-production-tools/exercises/file-synchronizer/)
+
+### Quick Start Examples
+
+- **[Simple Command Example](examples/simple-command/)** - Complete working example
+- **[Tutorial Code](tutorial/)** - All tutorial examples and exercises
+- **[Demo Scripts](demos/)** - VHS demonstration tapes
+
+### Help System
+
+glazed includes a rich help system. Access it with:
+
+```bash
+# Get help on any topic
+go run ./cmd/glaze help help-system
+
+# List all available help topics
+go run ./cmd/glaze help --list
+
+# Get help on specific topics
+go run ./cmd/glaze help parameter-layers
+```
+
+## 🔗 Links
+
+- [API Documentation](https://pkg.go.dev/github.com/go-go-golems/glazed)
+- [Tutorial Series](pkg/doc/tutorials/)
+- [Examples](examples/)
+- [Issue Tracker](https://github.com/go-go-golems/glazed/issues)

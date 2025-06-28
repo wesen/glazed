@@ -1,0 +1,6 @@
+processing:
+  batch-size: 50
+  workers: 8
+  file-types: ["txt", "json", "csv", "log"]
+  exclude-files: ["*.tmp", "*.bak", ".DS_Store"]
+  max-file-size: 104857600  # 100MB

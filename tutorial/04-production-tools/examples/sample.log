@@ -1,0 +1,7 @@
+127.0.0.1 - - [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326
+192.168.1.1 - - [10/Oct/2000:13:55:37 -0700] "POST /form HTTP/1.0" 404 1234
+10.0.0.1 - - [10/Oct/2000:13:55:38 -0700] "GET /index.html HTTP/1.0" 200 5432
+203.0.113.195 - - [10/Oct/2000:13:55:39 -0700] "GET /style.css HTTP/1.0" 200 987
+198.51.100.14 - - [10/Oct/2000:13:55:40 -0700] "POST /api/login HTTP/1.1" 401 0
+invalid log line that should cause a parsing error
+127.0.0.1 - - [10/Oct/2000:13:55:42 -0700] "GET /favicon.ico HTTP/1.0" 404 0

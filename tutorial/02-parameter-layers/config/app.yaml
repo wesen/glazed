@@ -1,0 +1,5 @@
+default:
+  input-dir: "./data/input"
+  verbose: true
+  dry-run: false
+  recursive: true

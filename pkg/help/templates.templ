@@ -14,13 +14,15 @@ templ Layout(title string, content templ.Component) {
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 		<title>{title} - Help System</title>
 		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
 		<link href="/static/style.css" rel="stylesheet"/>
 	</head>
-	<body>
-		<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+	<body class="elegant-layout">
+		<nav class="navbar navbar-expand-lg navbar-dark bg-gradient elegant-navbar sticky-top">
 			<div class="container-fluid">
-				<a class="navbar-brand" href="/">
-					<strong>Help System</strong>
+				<a class="navbar-brand fw-bold" href="/">
+					<i class="bi bi-book-half text-warning me-2"></i>
+					<span class="text-white">Help System</span>
 				</a>
 				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
 					<span class="navbar-toggler-icon"></span>
@@ -28,24 +30,53 @@ templ Layout(title string, content templ.Component) {
 				<div class="collapse navbar-collapse" id="navbarNav">
 					<ul class="navbar-nav me-auto">
 						<li class="nav-item">
-							<a class="nav-link" href="/">Home</a>
+							<a class="nav-link" href="/">
+								<i class="bi bi-house-door me-1"></i> Home
+							</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" href="/search">Search</a>
+							<a class="nav-link" href="/search">
+								<i class="bi bi-search me-1"></i> Search
+							</a>
 						</li>
 					</ul>
 					<form class="d-flex" action="/search" method="GET">
-						<input class="form-control me-2" type="search" name="q" placeholder="Search help..." aria-label="Search"/>
-						<button class="btn btn-outline-light" type="submit">Search</button>
+						<div class="input-group">
+							<span class="input-group-text bg-white border-end-0">
+								<i class="bi bi-search text-muted"></i>
+							</span>
+							<input class="form-control border-start-0" type="search" name="q" placeholder="Search help..." aria-label="Search"/>
+							<button class="btn btn-outline-light" type="submit">
+								<i class="bi bi-arrow-right"></i>
+							</button>
+						</div>
 					</form>
 				</div>
 			</div>
 		</nav>
-		<div class="container-fluid">
-			<div class="row">
-				@content
+		<main class="elegant-main">
+			<div class="container-fluid">
+				<div class="row">
+					@content
+				</div>
 			</div>
-		</div>
+		</main>
+		<footer class="elegant-footer bg-dark text-light py-4 mt-5">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-8">
+						<h6><i class="bi bi-info-circle me-2"></i>Help System</h6>
+						<p class="mb-0 text-muted">Browse documentation, examples, and tutorials with ease.</p>
+					</div>
+					<div class="col-md-4 text-md-end">
+						<small class="text-muted">
+							<i class="bi bi-lightning-charge text-warning me-1"></i>
+							Powered by Glazed Help System
+						</small>
+					</div>
+				</div>
+			</div>
+		</footer>
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 		<script src="/static/app.js"></script>
 	</body>
@@ -58,55 +89,91 @@ templ IndexPage(data map[string]interface{}) {
 }
 
 templ IndexContent(data map[string]interface{}) {
-	<div class="col-md-3 sidebar p-3">
-		<h5>Browse by Type</h5>
-		<div class="list-group">
-			<button type="button" class="list-group-item list-group-item-action filter-btn active" data-filter="all">
-				All Sections
-			</button>
-			<button type="button" class="list-group-item list-group-item-action filter-btn" data-filter="GeneralTopic">
-				<span class="badge badge-topic me-2">Topic</span> General Topics
-			</button>
-			<button type="button" class="list-group-item list-group-item-action filter-btn" data-filter="Example">
-				<span class="badge badge-example me-2">Example</span> Examples
-			</button>
-			<button type="button" class="list-group-item list-group-item-action filter-btn" data-filter="Application">
-				<span class="badge badge-application me-2">App</span> Applications
-			</button>
-			<button type="button" class="list-group-item list-group-item-action filter-btn" data-filter="Tutorial">
-				<span class="badge badge-tutorial me-2">Tutorial</span> Tutorials
-			</button>
+	<div class="col-12">
+		<!-- Hero Section -->
+		<div class="hero-section text-center py-5 mb-5">
+			<div class="container">
+				<h1 class="display-4 fw-bold text-primary mb-3">Help System</h1>
+				<p class="lead text-muted mb-4">Browse documentation, examples, and tutorials for this application</p>
+				
+				<!-- Filter Buttons Row -->
+				<div class="filter-row">
+					<div class="btn-group" role="group" aria-label="Section type filters">
+						<button type="button" class="btn btn-outline-primary filter-btn active" data-filter="all">
+							<i class="bi bi-grid"></i> All Sections
+						</button>
+						<button type="button" class="btn btn-outline-info filter-btn" data-filter="GeneralTopic">
+							<i class="bi bi-book"></i> Topics
+						</button>
+						<button type="button" class="btn btn-outline-success filter-btn" data-filter="Example">
+							<i class="bi bi-code-square"></i> Examples
+						</button>
+						<button type="button" class="btn btn-outline-warning filter-btn" data-filter="Application">
+							<i class="bi bi-app"></i> Applications
+						</button>
+						<button type="button" class="btn btn-outline-danger filter-btn" data-filter="Tutorial">
+							<i class="bi bi-mortarboard"></i> Tutorials
+						</button>
+					</div>
+				</div>
+			</div>
 		</div>
-	</div>
-	<div class="col-md-9 content-area p-4">
-		<div class="mb-4">
-			<h1>Help System</h1>
-			<p class="lead">Browse documentation, examples, and tutorials for this application.</p>
+
+		<!-- Content Sections -->
+		<div class="container-fluid px-4">
+			if helpPage, ok := data["HelpPage"].(*HelpPage); ok {
+				@ElegantSectionGroup("Featured Topics", helpPage.DefaultGeneralTopics, "primary")
+				@ElegantSectionGroup("Quick Examples", helpPage.DefaultExamples, "success")
+				@ElegantSectionGroup("Applications", helpPage.DefaultApplications, "warning")
+				@ElegantSectionGroup("Step-by-Step Tutorials", helpPage.DefaultTutorials, "danger")
+				
+				if len(helpPage.OtherGeneralTopics) > 0 {
+					@ElegantSectionGroup("More Topics", helpPage.OtherGeneralTopics, "secondary")
+				}
+				if len(helpPage.OtherExamples) > 0 {
+					@ElegantSectionGroup("Additional Examples", helpPage.OtherExamples, "info")
+				}
+				if len(helpPage.OtherApplications) > 0 {
+					@ElegantSectionGroup("More Applications", helpPage.OtherApplications, "dark")
+				}
+				if len(helpPage.OtherTutorials) > 0 {
+					@ElegantSectionGroup("Advanced Tutorials", helpPage.OtherTutorials, "secondary")
+				}
+			}
 		</div>
-		
-		if helpPage, ok := data["HelpPage"].(*HelpPage); ok {
-			@SectionGroup("Default Topics", helpPage.DefaultGeneralTopics)
-			@SectionGroup("Examples", helpPage.DefaultExamples)
-			@SectionGroup("Applications", helpPage.DefaultApplications)
-			@SectionGroup("Tutorials", helpPage.DefaultTutorials)
-			
-			if len(helpPage.OtherGeneralTopics) > 0 {
-				@SectionGroup("Other Topics", helpPage.OtherGeneralTopics)
-			}
-			if len(helpPage.OtherExamples) > 0 {
-				@SectionGroup("Other Examples", helpPage.OtherExamples)
-			}
-			if len(helpPage.OtherApplications) > 0 {
-				@SectionGroup("Other Applications", helpPage.OtherApplications)
-			}
-			if len(helpPage.OtherTutorials) > 0 {
-				@SectionGroup("Other Tutorials", helpPage.OtherTutorials)
-			}
-		}
 	</div>
 }
 
-// SectionGroup displays a group of sections
+// ElegantSectionGroup displays a group of sections with elegant styling
+templ ElegantSectionGroup(title string, sections []*Section, colorTheme string) {
+	if len(sections) > 0 {
+		<div class="section-group mb-5">
+			<div class="section-header mb-4">
+				<div class="row align-items-center">
+					<div class="col">
+						<h2 class={"text-" + colorTheme + " fw-bold"}>{title}</h2>
+						<div class={"progress" + " mb-2"} style="height: 3px;">
+							<div class={"progress-bar bg-" + colorTheme} role="progressbar" style="width: 100%"></div>
+						</div>
+					</div>
+					<div class="col-auto">
+						<span class={"badge bg-" + colorTheme + " fs-6"}>{fmt.Sprintf("%d", len(sections))}</span>
+					</div>
+				</div>
+			</div>
+			
+			<div class="row g-4">
+				for _, section := range sections {
+					<div class="col-xl-3 col-lg-4 col-md-6">
+						@ElegantSectionCard(section, colorTheme)
+					</div>
+				}
+			</div>
+		</div>
+	}
+}
+
+// SectionGroup displays a group of sections (legacy)
 templ SectionGroup(title string, sections []*Section) {
 	if len(sections) > 0 {
 		<div class="mb-4">
@@ -122,7 +189,46 @@ templ SectionGroup(title string, sections []*Section) {
 	}
 }
 
-// SectionCard displays a single section as a card
+// ElegantSectionCard displays a single section with elegant styling
+templ ElegantSectionCard(section *Section, colorTheme string) {
+	<div class="card elegant-section-card h-100 shadow-sm" data-section-type={section.SectionType.String()}>
+		<div class={"card-header border-0 bg-" + colorTheme + " bg-gradient"}>
+			<div class="d-flex justify-content-between align-items-center">
+				@ElegantSectionIcon(section.SectionType, "text-white")
+				@ElegantSectionTypeBadge(section.SectionType)
+			</div>
+		</div>
+		<div class="card-body d-flex flex-column">
+			<h5 class="card-title mb-3">
+				<a href={templ.URL("/section/" + section.Slug)} class={"text-decoration-none text-" + colorTheme + " fw-bold"}>
+					{section.Title}
+				</a>
+			</h5>
+			if section.Short != "" {
+				<p class="card-text text-muted flex-grow-1">{section.Short}</p>
+			}
+			if len(section.Topics) > 0 || len(section.Commands) > 0 {
+				<div class="section-tags mt-auto">
+					for _, topic := range section.Topics {
+						<span class="badge bg-light text-dark me-1 mb-1">{topic}</span>
+					}
+					for _, command := range section.Commands {
+						<span class={"badge bg-" + colorTheme + " me-1 mb-1"}>
+							<i class="bi bi-terminal"></i> {command}
+						</span>
+					}
+				</div>
+			}
+		</div>
+		<div class="card-footer border-0 bg-transparent">
+			<small class="text-muted">
+				<i class="bi bi-arrow-right-circle"></i> Click to explore
+			</small>
+		</div>
+	</div>
+}
+
+// SectionCard displays a single section as a card (legacy)
 templ SectionCard(section *Section) {
 	<div class="card section-card h-100" data-section-type={section.SectionType.String()}>
 		<div class="card-body">
@@ -151,7 +257,39 @@ templ SectionCard(section *Section) {
 	</div>
 }
 
-// SectionTypeBadge displays a badge for the section type
+// ElegantSectionIcon displays an icon for the section type
+templ ElegantSectionIcon(sectionType SectionType, class string) {
+	switch sectionType {
+	case SectionGeneralTopic:
+		<i class={"bi bi-book " + class + " fs-4"}></i>
+	case SectionExample:
+		<i class={"bi bi-code-square " + class + " fs-4"}></i>
+	case SectionApplication:
+		<i class={"bi bi-app " + class + " fs-4"}></i>
+	case SectionTutorial:
+		<i class={"bi bi-mortarboard " + class + " fs-4"}></i>
+	default:
+		<i class={"bi bi-question-circle " + class + " fs-4"}></i>
+	}
+}
+
+// ElegantSectionTypeBadge displays an elegant badge for the section type
+templ ElegantSectionTypeBadge(sectionType SectionType) {
+	switch sectionType {
+	case SectionGeneralTopic:
+		<span class="badge bg-white text-primary fw-bold">Topic</span>
+	case SectionExample:
+		<span class="badge bg-white text-success fw-bold">Example</span>
+	case SectionApplication:
+		<span class="badge bg-white text-warning fw-bold">App</span>
+	case SectionTutorial:
+		<span class="badge bg-white text-danger fw-bold">Tutorial</span>
+	default:
+		<span class="badge bg-white text-secondary fw-bold">Unknown</span>
+	}
+}
+
+// SectionTypeBadge displays a badge for the section type (legacy)
 templ SectionTypeBadge(sectionType SectionType) {
 	switch sectionType {
 	case SectionGeneralTopic:
@@ -173,74 +311,113 @@ templ SectionPage(data map[string]interface{}) {
 }
 
 templ SectionContent(data map[string]interface{}) {
-	<div class="col-md-2 sidebar p-3">
-		<div class="quick-nav">
-			<h6>Navigation</h6>
-			<ul class="nav nav-pills flex-column">
-				<li class="nav-item">
-					<a class="nav-link" href="/">← Back to Home</a>
-				</li>
-			</ul>
-		</div>
-	</div>
-	<div class="col-md-10 content-area p-4">
+	<div class="col-12">
 		if section, ok := data["Section"].(*Section); ok {
-			<nav aria-label="breadcrumb" class="nav-breadcrumb">
-				<ol class="breadcrumb">
-					<li class="breadcrumb-item">
-						<a href="/">Home</a>
-					</li>
-					<li class="breadcrumb-item active" aria-current="page">{section.Title}</li>
-				</ol>
-			</nav>
-			
-			<div class="d-flex justify-content-between align-items-start mb-3">
-				<h1>{section.Title}</h1>
-				@SectionTypeBadge(section.SectionType)
+			<!-- Header Section -->
+			<div class="section-page-header py-4 mb-5">
+				<div class="container">
+					<!-- Breadcrumb -->
+					<nav aria-label="breadcrumb" class="mb-3">
+						<ol class="breadcrumb bg-white rounded-pill px-3 py-2 shadow-sm">
+							<li class="breadcrumb-item">
+								<a href="/" class="text-decoration-none">
+									<i class="bi bi-house-door me-1"></i>Home
+								</a>
+							</li>
+							<li class="breadcrumb-item active" aria-current="page">
+								<i class="bi bi-chevron-right me-1"></i>{section.Title}
+							</li>
+						</ol>
+					</nav>
+					
+					<!-- Section Title Row -->
+					<div class="row align-items-center">
+						<div class="col-md-8">
+							<div class="d-flex align-items-center mb-3">
+								@ElegantSectionIcon(section.SectionType, "text-primary me-3")
+								<div>
+									<h1 class="display-5 fw-bold text-primary mb-0">{section.Title}</h1>
+									if section.SubTitle != "" {
+										<p class="lead text-muted mb-0">{section.SubTitle}</p>
+									}
+								</div>
+							</div>
+						</div>
+						<div class="col-md-4 text-md-end">
+							@ElegantSectionTypeBadge(section.SectionType)
+							<div class="mt-2">
+								<a href="/" class="btn btn-outline-primary rounded-pill">
+									<i class="bi bi-arrow-left me-1"></i>Back to Home
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
-			
-			if section.SubTitle != "" {
-				<h2 class="text-muted mb-3">{section.SubTitle}</h2>
+
+			<!-- Meta Information Row -->
+			if len(section.Topics) > 0 || len(section.Commands) > 0 || len(section.Flags) > 0 {
+				<div class="container mb-5">
+					<div class="row">
+						<div class="col-12">
+							<div class="card elegant-meta-card">
+								<div class="card-body">
+									<div class="row">
+										if len(section.Topics) > 0 {
+											<div class="col-md-4 mb-3">
+												<h6 class="fw-bold text-primary">
+													<i class="bi bi-tags me-2"></i>Topics
+												</h6>
+												<div class="d-flex flex-wrap gap-2">
+													for _, topic := range section.Topics {
+														<span class="badge bg-primary rounded-pill">{topic}</span>
+													}
+												</div>
+											</div>
+										}
+										if len(section.Commands) > 0 {
+											<div class="col-md-4 mb-3">
+												<h6 class="fw-bold text-success">
+													<i class="bi bi-terminal me-2"></i>Commands
+												</h6>
+												<div class="d-flex flex-wrap gap-2">
+													for _, command := range section.Commands {
+														<code class="bg-light px-2 py-1 rounded">{command}</code>
+													}
+												</div>
+											</div>
+										}
+										if len(section.Flags) > 0 {
+											<div class="col-md-4 mb-3">
+												<h6 class="fw-bold text-warning">
+													<i class="bi bi-flag me-2"></i>Flags
+												</h6>
+												<div class="d-flex flex-wrap gap-2">
+													for _, flag := range section.Flags {
+														<code class="bg-light px-2 py-1 rounded">--{flag}</code>
+													}
+												</div>
+											</div>
+										}
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
 			}
 			
-			<div class="section-meta">
-				if len(section.Topics) > 0 {
-					<div class="mb-2">
-						<strong>Topics:</strong>
-						for i, topic := range section.Topics {
-							if i > 0 {
-								<span>, </span>
-							}
-							<span class="badge bg-light text-dark">{topic}</span>
-						}
+			<!-- Content Section -->
+			<div class="container">
+				<div class="row justify-content-center">
+					<div class="col-lg-10">
+						<div class="elegant-content-card">
+							<div class="help-content">
+								@templ.Raw(renderMarkdown(section.Content))
+							</div>
+						</div>
 					</div>
-				}
-				if len(section.Commands) > 0 {
-					<div class="mb-2">
-						<strong>Commands:</strong>
-						for i, command := range section.Commands {
-							if i > 0 {
-								<span>, </span>
-							}
-							<code>{command}</code>
-						}
-					</div>
-				}
-				if len(section.Flags) > 0 {
-					<div class="mb-2">
-						<strong>Flags:</strong>
-						for i, flag := range section.Flags {
-							if i > 0 {
-								<span>, </span>
-							}
-							<code>--{flag}</code>
-						}
-					</div>
-				}
-			</div>
-			
-			<div class="help-content">
-				@templ.Raw(renderMarkdown(section.Content))
+				</div>
 			</div>
 		}
 	</div>
@@ -252,60 +429,158 @@ templ SearchPage(data map[string]interface{}) {
 }
 
 templ SearchContent(data map[string]interface{}) {
-	<div class="col-12 p-4">
-		<h1>Search Help</h1>
-		
-		<form id="searchForm" action="/search" method="GET" class="search-form">
-			<div class="row">
-				<div class="col-md-8">
-					<input 
-						type="text" 
-						id="searchInput"
-						name="q" 
-						class="form-control" 
-						placeholder="Search for topics, examples, or tutorials..." 
-						value={data["Query"].(string)}
-					/>
+	<div class="col-12">
+		<!-- Search Header -->
+		<div class="search-header py-5 mb-5">
+			<div class="container">
+				<div class="text-center mb-4">
+					<h1 class="display-4 fw-bold text-white">
+						<i class="bi bi-search me-3"></i>Search Help
+					</h1>
+					<p class="lead text-white-50">Find exactly what you're looking for</p>
 				</div>
-				<div class="col-md-3">
-					<select id="searchType" name="type" class="form-select">
-						<option value="">All Types</option>
-						<option value="topics" if data["Type"].(string) == "topics" { selected }>Topics</option>
-						<option value="examples" if data["Type"].(string) == "examples" { selected }>Examples</option>
-						<option value="applications" if data["Type"].(string) == "applications" { selected }>Applications</option>
-						<option value="tutorials" if data["Type"].(string) == "tutorials" { selected }>Tutorials</option>
-					</select>
-				</div>
-				<div class="col-md-1">
-					<button type="submit" class="btn btn-primary w-100">Search</button>
+				
+				<!-- Search Form -->
+				<div class="row justify-content-center">
+					<div class="col-lg-8">
+						<form id="searchForm" action="/search" method="GET" class="elegant-search-form">
+							<div class="card border-0 shadow-lg">
+								<div class="card-body p-4">
+									<div class="row g-3">
+										<div class="col-md-7">
+											<div class="input-group">
+												<span class="input-group-text bg-primary text-white border-0">
+													<i class="bi bi-search"></i>
+												</span>
+												<input 
+													type="text" 
+													id="searchInput"
+													name="q" 
+													class="form-control border-0 shadow-sm" 
+													placeholder="Search for topics, examples, or tutorials..." 
+													value={data["Query"].(string)}
+												/>
+											</div>
+										</div>
+										<div class="col-md-3">
+											<select id="searchType" name="type" class="form-select border-0 shadow-sm">
+												<option value="">All Types</option>
+												<option value="topics" if data["Type"].(string) == "topics" { selected }>Topics</option>
+												<option value="examples" if data["Type"].(string) == "examples" { selected }>Examples</option>
+												<option value="applications" if data["Type"].(string) == "applications" { selected }>Applications</option>
+												<option value="tutorials" if data["Type"].(string) == "tutorials" { selected }>Tutorials</option>
+											</select>
+										</div>
+										<div class="col-md-2">
+											<button type="submit" class="btn btn-primary w-100 shadow-sm rounded-pill fw-bold">
+												<i class="bi bi-arrow-right"></i>
+											</button>
+										</div>
+									</div>
+								</div>
+							</div>
+						</form>
+					</div>
 				</div>
 			</div>
-		</form>
-		
-		if results, ok := data["Results"].([]*Section); ok {
-			if data["Query"].(string) != "" {
-				<h3>Search Results</h3>
-				<p class="text-muted">Found {fmt.Sprintf("%d", len(results))} results for "{data["Query"].(string)}"</p>
-				
-				if len(results) > 0 {
-					<div class="row">
-						for _, section := range results {
-							<div class="col-md-6 col-lg-4 mb-3">
-								@SectionCard(section)
+		</div>
+
+		<!-- Search Results -->
+		<div class="container">
+			if results, ok := data["Results"].([]*Section); ok {
+				if data["Query"].(string) != "" {
+					<!-- Results Header -->
+					<div class="results-header mb-4">
+						<div class="row align-items-center">
+							<div class="col-md-8">
+								<h3 class="text-primary fw-bold">
+									<i class="bi bi-list-ul me-2"></i>Search Results
+								</h3>
+								<p class="text-muted mb-0">
+									Found <span class="fw-bold text-primary">{fmt.Sprintf("%d", len(results))}</span> results for 
+									<span class="fw-bold">"{data["Query"].(string)}"</span>
+								</p>
 							</div>
-						}
+							<div class="col-md-4 text-md-end">
+								<a href="/" class="btn btn-outline-primary rounded-pill">
+									<i class="bi bi-house-door me-1"></i>Back to Home
+								</a>
+							</div>
+						</div>
 					</div>
+					
+					if len(results) > 0 {
+						<!-- Results Grid -->
+						<div class="row g-4">
+							for _, section := range results {
+								<div class="col-xl-3 col-lg-4 col-md-6">
+									@ElegantSectionCard(section, getColorForSectionType(section.SectionType))
+								</div>
+							}
+						</div>
+					} else {
+						<!-- No Results -->
+						<div class="text-center py-5">
+							<div class="card elegant-no-results-card">
+								<div class="card-body p-5">
+									<i class="bi bi-search text-muted" style="font-size: 4rem;"></i>
+									<h4 class="mt-3 mb-3">No results found</h4>
+									<p class="text-muted mb-4">
+										We couldn't find any content matching your search. 
+										Try adjusting your search terms or explore our main categories.
+									</p>
+									<a href="/" class="btn btn-primary rounded-pill px-4">
+										<i class="bi bi-house-door me-2"></i>Browse All Help
+									</a>
+								</div>
+							</div>
+						</div>
+					}
 				} else {
-					<div class="alert alert-info">
-						<h4>No results found</h4>
-						<p>Try adjusting your search terms or browse the <a href="/">main help page</a>.</p>
+					<!-- Empty State -->
+					<div class="text-center py-5">
+						<div class="card elegant-empty-state-card">
+							<div class="card-body p-5">
+								<i class="bi bi-lightbulb text-primary" style="font-size: 4rem;"></i>
+								<h4 class="mt-3 mb-3 text-primary">Ready to Search?</h4>
+								<p class="text-muted mb-4">
+									Enter a search term above to find help topics, examples, and tutorials.
+								</p>
+								<div class="row justify-content-center">
+									<div class="col-md-8">
+										<div class="d-flex flex-wrap justify-content-center gap-2">
+											<span class="badge bg-light text-dark px-3 py-2">configuration</span>
+											<span class="badge bg-light text-dark px-3 py-2">examples</span>
+											<span class="badge bg-light text-dark px-3 py-2">getting started</span>
+											<span class="badge bg-light text-dark px-3 py-2">tutorial</span>
+											<span class="badge bg-light text-dark px-3 py-2">commands</span>
+										</div>
+										<small class="text-muted d-block mt-2">Try searching for one of these popular terms</small>
+									</div>
+								</div>
+							</div>
+						</div>
 					</div>
 				}
-			} else {
-				<p class="text-muted">Enter a search term to find help topics, examples, and tutorials.</p>
 			}
-		}
+		</div>
 	</div>
+}
+
+// Helper function to get color theme for section type
+func getColorForSectionType(sectionType SectionType) string {
+	switch sectionType {
+	case SectionGeneralTopic:
+		return "primary"
+	case SectionExample:
+		return "success"
+	case SectionApplication:
+		return "warning"
+	case SectionTutorial:
+		return "danger"
+	default:
+		return "secondary"
+	}
 }
 
 // Helper function to render markdown (simplified)

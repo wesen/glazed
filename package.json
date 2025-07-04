@@ -1,0 +1,14 @@
+{
+  "name": "glazed-help-system",
+  "version": "1.0.0",
+  "description": "Help system for glazed with Tailwind CSS",
+  "scripts": {
+    "build-css": "tailwindcss -i ./pkg/help/static/tailwind.input.css -o ./pkg/help/static/style.css --watch",
+    "build-css-prod": "tailwindcss -i ./pkg/help/static/tailwind.input.css -o ./pkg/help/static/style.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0",
+    "@tailwindcss/typography": "^0.5.10",
+    "@tailwindcss/forms": "^0.5.7"
+  }
+}

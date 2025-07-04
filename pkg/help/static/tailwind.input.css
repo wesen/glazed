@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom component classes */
+@layer components {
+  .elegant-card {
+    @apply bg-white rounded-3xl shadow-xl border-0 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02];
+  }
+  
+  .elegant-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  .glass-morphism {
+    @apply bg-white/90 backdrop-blur-md border border-white/20;
+  }
+  
+  .section-card-header {
+    @apply p-6 text-white;
+    background: linear-gradient(135deg, var(--header-color-start), var(--header-color-end));
+  }
+  
+  .section-card-primary {
+    --header-color-start: #3b82f6;
+    --header-color-end: #1d4ed8;
+  }
+  
+  .section-card-success {
+    --header-color-start: #10b981;
+    --header-color-end: #059669;
+  }
+  
+  .section-card-warning {
+    --header-color-start: #f59e0b;
+    --header-color-end: #d97706;
+  }
+  
+  .section-card-danger {
+    --header-color-start: #ef4444;
+    --header-color-end: #dc2626;
+  }
+  
+  .elegant-btn {
+    @apply px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1;
+  }
+  
+  .elegant-btn-primary {
+    @apply elegant-btn bg-blue-500 text-white hover:bg-blue-600;
+  }
+  
+  .elegant-btn-outline {
+    @apply elegant-btn border-2 bg-transparent hover:bg-opacity-10;
+  }
+  
+  .filter-btn {
+    @apply px-6 py-3 font-semibold transition-all duration-300 border-2 hover:transform hover:scale-105;
+  }
+  
+  .filter-btn-active {
+    @apply transform scale-105 z-10;
+  }
+  
+  .hero-section {
+    @apply py-20 text-center text-white;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  .section-group {
+    @apply mb-12 p-8 rounded-3xl shadow-xl;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+  }
+  
+  .elegant-navbar {
+    @apply sticky top-0 z-50 shadow-xl;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  .elegant-footer {
+    @apply py-8 mt-12 text-white;
+    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+  }
+}
+
+/* Custom animations */
+@layer utilities {
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+}
+
+/* Base styles */
+@layer base {
+  body {
+    @apply min-h-screen;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  }
+  
+  .help-content {
+    @apply prose prose-lg max-w-none;
+  }
+  
+  .help-content h1 {
+    @apply text-3xl font-bold text-gray-900 mb-6;
+  }
+  
+  .help-content h2 {
+    @apply text-2xl font-semibold text-gray-800 mt-8 mb-4;
+  }
+  
+  .help-content h3 {
+    @apply text-xl font-medium text-gray-700 mt-6 mb-3;
+  }
+  
+  .help-content p {
+    @apply text-gray-600 leading-relaxed mb-4;
+  }
+  
+  .help-content code {
+    @apply bg-gray-100 px-2 py-1 rounded text-sm font-mono text-gray-800;
+  }
+  
+  .help-content pre {
+    @apply bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto mb-4;
+  }
+  
+  .help-content pre code {
+    @apply bg-transparent p-0 text-gray-100;
+  }
+}

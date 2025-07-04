@@ -1,5 +1,150 @@
-/* Custom styles for help system */
+/* Elegant Help System Styles */
 
+/* Layout */
+.elegant-layout {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+}
+
+.elegant-main {
+    min-height: calc(100vh - 200px);
+}
+
+.elegant-navbar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+}
+
+.elegant-footer {
+    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%) !important;
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20px;
+    margin: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.filter-row .btn-group {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    border-radius: 50px;
+    overflow: hidden;
+}
+
+.filter-row .btn {
+    border-radius: 0;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.filter-row .btn:first-child {
+    border-radius: 50px 0 0 50px;
+}
+
+.filter-row .btn:last-child {
+    border-radius: 0 50px 50px 0;
+}
+
+.filter-row .btn.active {
+    transform: scale(1.05);
+    z-index: 2;
+}
+
+/* Section Groups */
+.section-group {
+    background: rgba(255,255,255,0.9);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 3rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    backdrop-filter: blur(10px);
+}
+
+.section-header .progress {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Elegant Cards */
+.elegant-section-card {
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.elegant-section-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.elegant-section-card .card-header {
+    padding: 1.5rem;
+    border-radius: 20px 20px 0 0;
+}
+
+.elegant-section-card .card-body {
+    padding: 1.5rem;
+}
+
+.elegant-section-card .card-footer {
+    padding: 1rem 1.5rem;
+    text-align: center;
+}
+
+/* Section Page Styles */
+.section-page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    margin: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.elegant-meta-card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+}
+
+.elegant-content-card {
+    background: white;
+    border-radius: 20px;
+    padding: 3rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    margin-bottom: 3rem;
+}
+
+/* Search Page Styles */
+.search-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    margin: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.elegant-search-form .card {
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.elegant-no-results-card, 
+.elegant-empty-state-card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+}
+
+/* Legacy styles for backward compatibility */
 .sidebar {
     background-color: #f8f9fa;
     min-height: 100vh;

@@ -12,6 +12,8 @@ import (
 )
 
 func TestGatherFlagsFromYAMLConfigLoadsBaseAndOverride(t *testing.T) {
+	t.Setenv("USER", "test-user")
+
 	tempDir := t.TempDir()
 	configFile := filepath.Join(tempDir, "config.yaml")
 	overrideFile := filepath.Join(tempDir, "config.test-user.yaml")
@@ -57,8 +59,7 @@ test:
 
 	middleware := GatherFlagsFromYAMLConfig(
 		configFile,
-		WithYAMLConfigUsername("test-user"),
-		WithYAMLConfigParseOptions(parameters.WithParseStepSource("yaml-config")),
+		parameters.WithParseStepSource("yaml-config"),
 	)
 
 	handler := middleware(Identity)
@@ -81,6 +82,8 @@ test:
 }
 
 func TestGatherFlagsFromYAMLConfigMissingOverride(t *testing.T) {
+	t.Setenv("USER", "missing-user")
+
 	tempDir := t.TempDir()
 	configFile := filepath.Join(tempDir, "config.yaml")
 
@@ -103,10 +106,7 @@ test:
 
 	parsedLayers := layers.NewParsedLayers()
 
-	middleware := GatherFlagsFromYAMLConfig(
-		configFile,
-		WithYAMLConfigUsername("missing-user"),
-	)
+	middleware := GatherFlagsFromYAMLConfig(configFile)
 
 	handler := middleware(Identity)
 	require.NoError(t, handler(parameterLayers, parsedLayers))
@@ -119,54 +119,7 @@ test:
 	assert.Equal(t, "value", baseValue.Value)
 }
 
-func TestGatherFlagsFromYAMLConfigCustomTemplate(t *testing.T) {
-	tempDir := t.TempDir()
-	configFile := filepath.Join(tempDir, "config.yaml")
-	overrideFile := filepath.Join(tempDir, "config-test-user.yaml")
-
-	baseConfig := `
-test:
-  param: "base"
-`
-	overrideConfig := `
-test:
-  param: "custom-template"
-`
-
-	require.NoError(t, os.WriteFile(configFile, []byte(baseConfig), 0644))
-	require.NoError(t, os.WriteFile(overrideFile, []byte(overrideConfig), 0644))
-
-	param := &parameters.ParameterDefinition{
-		Name: "param",
-		Type: parameters.ParameterTypeString,
-	}
-
-	layer, err := layers.NewParameterLayer("test", "Test layer", layers.WithParameterDefinitions(param))
-	require.NoError(t, err)
-
-	parameterLayers := layers.NewParameterLayers()
-	parameterLayers.Set("test", layer)
-
-	parsedLayers := layers.NewParsedLayers()
-
-	middleware := GatherFlagsFromYAMLConfig(
-		configFile,
-		WithYAMLConfigUsername("test-user"),
-		WithYAMLConfigOverrideTemplate(`{{ if .Dir }}{{ .Dir }}/{{ end }}{{ .Name }}-{{ .Username }}{{ .Ext }}`),
-	)
-
-	handler := middleware(Identity)
-	require.NoError(t, handler(parameterLayers, parsedLayers))
-
-	parsedLayer, ok := parsedLayers.Get("test")
-	require.True(t, ok)
-
-	value, ok := parsedLayer.Parameters.Get("param")
-	require.True(t, ok)
-	assert.Equal(t, "custom-template", value.Value)
-}
-
-func TestGatherFlagsFromYAMLConfigRequiredBase(t *testing.T) {
+func TestGatherFlagsFromYAMLConfigMissingBaseReturnsError(t *testing.T) {
 	tempDir := t.TempDir()
 	configFile := filepath.Join(tempDir, "config.yaml")
 
@@ -177,10 +130,7 @@ func TestGatherFlagsFromYAMLConfigRequiredBase(t *testing.T) {
 
 	parsedLayers := layers.NewParsedLayers()
 
-	middleware := GatherFlagsFromYAMLConfig(
-		configFile,
-		WithYAMLConfigRequired(true),
-	)
+	middleware := GatherFlagsFromYAMLConfig(configFile)
 
 	handler := middleware(Identity)
 	err = handler(parameterLayers, parsedLayers)

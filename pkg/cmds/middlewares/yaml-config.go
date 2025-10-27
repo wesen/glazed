@@ -1,12 +1,10 @@
 package middlewares
 
 import (
-	"bytes"
 	"os"
 	"os/user"
 	"path/filepath"
 	"strings"
-	"text/template"
 
 	"github.com/go-go-golems/glazed/pkg/cmds/layers"
 	"github.com/go-go-golems/glazed/pkg/cmds/parameters"
@@ -14,77 +12,17 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// yamlConfigOverrideTemplateData contains information passed to the override filename template.
-type yamlConfigOverrideTemplateData struct {
-	// Path is the absolute or relative path that was provided to the middleware.
-	Path string
-	// Dir is the directory portion of Path, without a trailing separator. May be empty.
-	Dir string
-	// Base is the last element of Path (including the extension).
-	Base string
-	// Name is Base without the extension.
-	Name string
-	// Ext is the file extension for Path (including the leading dot).
-	Ext string
-	// Username is the resolved username that should be injected into the template.
-	Username string
-}
-
-// YAMLConfigOption customises how GatherFlagsFromYAMLConfig behaves.
-type YAMLConfigOption func(*yamlConfigConfig)
-
-type yamlConfigConfig struct {
-	overrideTemplate string
-	username         string
-	parseOptions     []parameters.ParseStepOption
-	required         bool
-}
-
-const defaultOverrideTemplate = `{{ if .Dir }}{{ .Dir }}/{{ end }}{{ .Name }}.{{ .Username }}{{ .Ext }}`
-
-// WithYAMLConfigOverrideTemplate allows providing a text/template that is used to build
-// the override filename. The template receives yamlConfigOverrideTemplateData.
-func WithYAMLConfigOverrideTemplate(tmpl string) YAMLConfigOption {
-	return func(c *yamlConfigConfig) {
-		c.overrideTemplate = tmpl
-	}
-}
-
-// WithYAMLConfigUsername sets the username that should be injected into the override template.
-// Useful for tests or when the operating system user must be overridden.
-func WithYAMLConfigUsername(username string) YAMLConfigOption {
-	return func(c *yamlConfigConfig) {
-		c.username = username
-	}
-}
-
-// WithYAMLConfigParseOptions appends parse step options that will be applied when parameters
-// are populated from the YAML files.
-func WithYAMLConfigParseOptions(options ...parameters.ParseStepOption) YAMLConfigOption {
-	return func(c *yamlConfigConfig) {
-		c.parseOptions = append(c.parseOptions, options...)
-	}
-}
-
-// WithYAMLConfigRequired ensures the base YAML config must exist; missing files trigger an error.
-func WithYAMLConfigRequired(required bool) YAMLConfigOption {
-	return func(c *yamlConfigConfig) {
-		c.required = required
-	}
-}
-
-// GatherFlagsFromYAMLConfig loads parameter values from a YAML configuration file and, when present,
-// from a username-specific override file. The override filename is built from a configurable
-// template that receives the base file information and the resolved username.
+// GatherFlagsFromYAMLConfig loads parameter values from a YAML configuration file
+// and, when available, a username-specific override file in the format
+// <name>.<username><ext>. Values from the override replace values from the base config.
 //
 // The YAML file must follow the structure:
 //
 //	layerSlug:
 //	  parameter-name: value
 //
-// Values are merged into the parsed layers using updateFromMap semantics, meaning overrides replace
-// previously populated values.
-func GatherFlagsFromYAMLConfig(configFile string, options ...YAMLConfigOption) Middleware {
+// parseOptions are applied to each parsed parameter to annotate the parse steps.
+func GatherFlagsFromYAMLConfig(configFile string, parseOptions ...parameters.ParseStepOption) Middleware {
 	return func(next HandlerFunc) HandlerFunc {
 		return func(layers_ *layers.ParameterLayers, parsedLayers *layers.ParsedLayers) error {
 			err := next(layers_, parsedLayers)
@@ -92,63 +30,41 @@ func GatherFlagsFromYAMLConfig(configFile string, options ...YAMLConfigOption) M
 				return err
 			}
 
-			cfg := &yamlConfigConfig{
-				overrideTemplate: defaultOverrideTemplate,
-			}
-			for _, opt := range options {
-				opt(cfg)
-			}
-
-			if cfg.username == "" {
-				cfg.username = resolveCurrentUsername()
-			}
-
 			baseMap, err := loadYAMLConfigMap(configFile)
-			switch {
-			case err == nil:
-				err = applyConfigMap(layers_, parsedLayers, baseMap, cfg.parseOptions, map[string]interface{}{
-					"configFile": configFile,
-					"kind":       "base",
-				})
-				if err != nil {
-					return err
-				}
-			case os.IsNotExist(err):
-				if cfg.required {
+			if err != nil {
+				if os.IsNotExist(err) {
 					return errors.Wrapf(err, "config file %s does not exist", configFile)
 				}
-			case err != nil:
 				return errors.Wrapf(err, "failed to load config file %s", configFile)
 			}
 
-			if cfg.overrideTemplate == "" || cfg.username == "" {
+			err = applyConfigMap(layers_, parsedLayers, baseMap, parseOptions, map[string]interface{}{
+				"configFile": configFile,
+				"kind":       "base",
+			})
+			if err != nil {
+				return err
+			}
+
+			username := resolveCurrentUsername()
+			if username == "" {
 				return nil
 			}
 
-			overridePath, err := buildOverridePath(configFile, cfg.overrideTemplate, cfg.username)
-			if err != nil {
-				return errors.Wrap(err, "failed to build override config path")
-			}
-
+			overridePath := overrideConfigPath(configFile, username)
 			overrideMap, err := loadYAMLConfigMap(overridePath)
 			switch {
 			case err == nil:
-				err = applyConfigMap(layers_, parsedLayers, overrideMap, cfg.parseOptions, map[string]interface{}{
+				return applyConfigMap(layers_, parsedLayers, overrideMap, parseOptions, map[string]interface{}{
 					"configFile": overridePath,
 					"kind":       "override",
-					"username":   cfg.username,
+					"username":   username,
 				})
-				if err != nil {
-					return err
-				}
 			case os.IsNotExist(err):
-				// Missing overrides are fine.
 				return nil
-			case err != nil:
+			default:
 				return errors.Wrapf(err, "failed to load override config file %s", overridePath)
 			}
-
-			return nil
 		}
 	}
 }
@@ -194,44 +110,23 @@ func loadYAMLConfigMap(path string) (map[string]map[string]interface{}, error) {
 	return result, nil
 }
 
-func buildOverridePath(path string, tmpl string, username string) (string, error) {
+func overrideConfigPath(path string, username string) string {
 	dir := filepath.Dir(path)
-	if dir == "." {
-		dir = ""
-	}
-
 	base := filepath.Base(path)
 	ext := filepath.Ext(base)
 	name := strings.TrimSuffix(base, ext)
 
-	t, err := template.New("yaml-config-override").Parse(tmpl)
-	if err != nil {
-		return "", err
+	filename := name + "." + username + ext
+	if dir == "." {
+		return filename
 	}
 
-	data := yamlConfigOverrideTemplateData{
-		Path:     path,
-		Dir:      dir,
-		Base:     base,
-		Name:     name,
-		Ext:      ext,
-		Username: username,
-	}
-
-	var buf bytes.Buffer
-	if err := t.Execute(&buf, data); err != nil {
-		return "", err
-	}
-
-	return buf.String(), nil
+	return filepath.Join(dir, filename)
 }
 
 func resolveCurrentUsername() string {
-	if u, err := user.Current(); err == nil {
-		username := sanitizeUsername(u.Username)
-		if username != "" {
-			return username
-		}
+	if username := sanitizeUsername(os.Getenv("GLAZED_USERNAME")); username != "" {
+		return username
 	}
 
 	if username := sanitizeUsername(os.Getenv("USER")); username != "" {
@@ -240,6 +135,13 @@ func resolveCurrentUsername() string {
 
 	if username := sanitizeUsername(os.Getenv("USERNAME")); username != "" {
 		return username
+	}
+
+	if u, err := user.Current(); err == nil {
+		username := sanitizeUsername(u.Username)
+		if username != "" {
+			return username
+		}
 	}
 
 	return ""
